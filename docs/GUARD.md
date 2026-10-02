@@ -196,3 +196,5 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 |---|---|---|---|
 | cr_query_stale (기본 KEEP) | `query:hot` · `hot/srv07.fan_rpm` | SAFE_ACTION → KEEP | **DENY (D)** |
 | exec_* (기본 ESCALATE · STOP, ActionSpec 있음) | — | SAFE_ACTION | SAFE_ACTION (그대로) |
+
+시험(G4): 단위 81 · 변이 **78/78 RED**(★ 실행기 밖 행동으로 갈아 끼움 포함) · MS 대조 68,688 비교 다름 0(그대로).
