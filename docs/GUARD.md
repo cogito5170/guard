@@ -179,3 +179,5 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 | cr_complete | — | ALLOW |
 | cr_query_stale (`hot/srv07.fan_rpm` 낡음) | — · `query:cold` · `session.context_pressure` | **ALLOW** (G2: SAFE_ACTION) |
 | 〃 | `query:hot` 또는 `hot/srv07.fan_rpm` | SAFE_ACTION → KEEP |
+
+시험(G3): 단위 80 · 변이 **77/77 RED**(G2 의 71 + 범위 변이 6) · MS 대조 68,688 비교 다름 0(그대로).
