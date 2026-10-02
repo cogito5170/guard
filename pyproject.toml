@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guard"
+version = "0.1.0"
+description = "Guard (VALIDATE · ARBITRATE · GUARD, shadow) -- 닫는 쪽으로만. 표준 라이브러리 + action 계약"
+readme = "README.md"
+requires-python = ">=3.10"
+# action 계약은 Guard 의 입력 꼴이라 필수 의존이다. 커밋 sha 로 고정한다(baseline#7 CMD-G1, action 통합 머리 443f8eb)
+dependencies = ["action-contract @ git+https://github.com/cogito5170/action@443f8eb810ce3cb9677cdc9f564ff79790f9c2ec"]
+
+[tool.setuptools]
+packages = ["guard"]

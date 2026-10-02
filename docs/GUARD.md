@@ -1,0 +1,102 @@
+# GUARD — shadow 뼈대 (CMD-G1)
+
+근거는 baseline `claude/gracious-meitner-vp49xe` 의 다음 문서다.
+- BD-07: Guard 는 Policy 와 독립이고, 닫는 쪽으로만 가며, 지금 상태를 읽는다
+- BD-20 · BD-24: A0–A8 배분. Validate = A0–A4 · Arbitrate = 선택 · Guard = A5–A8
+- BD-23 · BD-76: 목적의 안전 기본 결정
+- BD-96 · BD-97: action 계약, 의도가 되지 않는 것
+- `SCHEMA_PROPOSAL.md` §2 · `DATA_FLOW.md` §6 · `OPEN_QUESTIONS.md` OQ-17 · 이슈 baseline#7
+
+코드: [`guard/rules.py`](../guard/rules.py) · [`guard/forms.py`](../guard/forms.py) · [`guard/views.py`](../guard/views.py) · [`guard/command.py`](../guard/command.py).
+
+## 1. 흐름
+
+```
+evaluate(intent, dc, state, model)
+  ├─ validate(intent, dc, model)  A0 꼴 · 이 DC 의 의도인가 · 의도가 되는 행동인가
+  │                               A1 문맥이 내놓은 행동인가(+ Model 에 ActionSpec 이 있나)
+  │                               A2 결정이 본 실체인가     A3 그 행동의 대상인가     A4 인자가 ActionSpec 과 맞나
+  │     └─ 막히면 → GuardResult(DENY, rule = 그 규칙)   GUARD 는 돌지 않는다
+  └─ guard(intent, dc, state, model)   걸린 규칙을 모두 본다(논리곱)
+        D  DC 가 불완전하거나 낡은 키가 있는데 위험 등급 행동(목적의 안전 기본 후보는 빼고)
+        A5 결정이 본 판 ≠ 지금 판 · 지금 상태에 없음
+        A6 사전조건이 보는 속성이 지금 없거나 낡음 · 지금 거짓 · 대상 모형이 다름
+        A7 external · irreversible 인데 허가 없음
+        A8 같은 (행동 · 대상 · 인자, 판)을 이미 ALLOW 함
+        → 걸린 것 없음: ALLOW
+        → D 가 걸렸고 DC 의 기본 행동이 후보 안에 있음: SAFE_ACTION(그 행동)
+        → 그 밖: DENY
+        → 예외: DENY(rule E)
+```
+
+`rule` 은 판정을 정한 규칙이다. D 가 걸렸으면 D 이고, 아니면 A5 → A6 → A7 → A8 순서(MS 와 같은 순서)에서 처음 걸린 것이다. `reasons` 에는 걸린 규칙이 **모두** `[규칙] 까닭` 꼴로 들어간다.
+
+ARBITRATE 는 짓지 않았다. 지금 후보는 하나뿐이고, BD-24 는 "옮길 규칙 없음" 이다.
+
+## 2. 꼴
+
+### 나가는 꼴 (닫힌 꼴 · 판본 · 정준 JSON · 내용 해시 — action 계약과 같은 방식, `action.canonical`)
+
+| 꼴 | 판본 | 칸 |
+|---|---|---|
+| ValidationResult | `validation-result/1` | `validation_id`(`val-` + 해시) · `intent_id` · `ok` · `rule`(A0–A4 · E · `"0"`) · `reasons` |
+| GuardResult | `guard-result/1` | `guard_id`(`grd-` + 해시) · `intent_id` · `verdict`(ALLOW · DENY · SAFE_ACTION) · `mode`(shadow · enforce) · `rule` · `state_refs` · `reasons` · **`safe_action`** |
+
+꼴 안의 맞춤 검사:
+- ALLOW ⇔ `rule == "0"` 이다.
+- SAFE_ACTION ⇔ `safe_action` 이 있다.
+- `state_refs` 는 `"<실체>@<판>"` · `"<실체>.<속성>"` 꼴이다. 정렬하고 겹침이 없다.
+
+### 들어오는 꼴 (`guard/views.py`, 닫힌 꼴)
+
+| 꼴 | 칸 | 채우는 쪽(예정) |
+|---|---|---|
+| DCView | `dc_id` · `offers{행동: [대상]}` · `seen{실체: 판}` · `decisions` · `handles` · `complete` · `stale_keys` · `default_decision` · `default_action` | MS 의 맥락 / DC 의 결정 문맥 |
+| StateView | `entities{실체: {model, version, props{이름: {value, stale, age}}}}` · `allowed` | 배차 직전의 상태 저장소 읽기 |
+| GuardModel | `specs`(ActionSpec: name · target_model · params · preconditions · risk) · `grants` · `risky` | Model(ActionSpec, BD-31) |
+
+### ActionCommand 재료 (`guard/command.py`)
+
+- ALLOW 이면 의도의 `action` · `target` · `args` 를 그대로 쓴다.
+- SAFE_ACTION 이면 갈아 끼운 행동을 쓰고, `target=None` · `args={}` 로 둔다.
+- DENY 에는 재료가 없다(예외를 낸다).
+- `decision_ref` · `issued_at` · `deadline` 은 배차하는 쪽이 `build_command` 로 채운다.
+
+## 3. baseline 표 · 지시와 다른 점 (판단 필요)
+
+| # | 지시 · 표 | 여기 | 까닭 |
+|---|---|---|---|
+| G-D1 | GuardResult 에 `safe_action` 없음 | **더함** | SAFE_ACTION 이 무엇으로 갈아 끼웠는지 원장에 남아야 한다. 칸이 없으면 명령 재료를 다시 지을 수 없다 |
+| G-D2 | `validate(intent, dc)` | `validate(intent, dc, model)` | A4 는 인자를 **Model 의 ActionSpec** 에 맞춘다(MS 도 registry 를 본다). 문맥에 실린 카드를 믿지 않는다 |
+| G-D3 | `guard(intent, state_view, model)` | `guard(intent, dc, state, model)` | A5 는 결정이 **본 판**과 지금 판을 견준다. D 는 DC 의 완전성 · 기본 결정을 본다. 둘 다 DC 에 있다 |
+| G-D4 | (MS 는 Arbiter 안에 기억) | A8 의 기억 = `StateView.allowed`, 호출자가 더함 | 순수 함수로 짓는다는 지시를 따랐다 |
+| G-D5 | (MS 는 첫 규칙에서 멈춤) | 걸린 규칙을 모두 `reasons` 에 적음. `rule` 은 MS 순서의 첫 것 | DATA_FLOW §6.4 "논리곱 · 서로 풀어 주지 못한다". 판정과 rule 은 MS 와 같다(대조 시험) |
+| G-D6 | — | 새 규칙 **D**(DATA_FLOW §6.5) | 끝난 기준 3. SAFE_ACTION 은 D 에서만 나온다(§4 A2) |
+| G-D7 | MS: `none` → NOOP, `retrieve` → ALLOW R / A2 | 둘 다 **A0** | BD-97: 의도가 되지 않는다. 대조에서는 범위 밖으로 세었다 |
+| G-D8 | MS: 의도에 `dc_id` 없음 | `intent.dc_id ≠ dc.dc_id` → A0 | 다른 문맥을 보고 낸 의도를 이 문맥의 근거로 통과시키지 않는다 |
+| G-D9 | MS: 모르는 인자 타입은 통과 | 모르는 타입 → A4 | 닫는 쪽. MS 예시에는 그런 타입이 없어 대조에 나타나지 않는다 |
+| G-D10 | — | 겨냥 없는 행동(`target=None`): 문맥이 대상 `None` 으로 내놓았을 때만 A2 · A3 를 지난다. 사전조건이 있으면 A6 | action 계약이 겨냥 없는 행동을 허용한다(STOP · ESCALATE). MS 에는 아직 없다 |
+
+## 4. 가정 (assumption — baseline 확인 필요)
+
+- **A1. "위험 등급"** 의 기본값은 `external` · `irreversible` 이다(`GuardModel.risky`). D 는 이 등급만 막고, `local` · `read` 는 DC 가 불완전해도 지난다. A7(허가가 필요한 등급)과 같은 경계다. Model 이 바꿀 수 있다.
+- **A2. SAFE_ACTION 은 D 에서만** 낸다. 그리고 DC 가 고른 `default_action`(능력 있는 첫 후보)이 `default_decision` 안에 있을 때만 낸다. A5–A8 의 거부는 DENY 로 남긴다. 그래야 MS 처럼 다음 판에서 다시 제안하는 길이 그대로 남는다. 갈아 끼운 행동 자체는 A5–A8 로 다시 보지 않는다(목적 단위 행동이고 겨냥이 없다, DATA_FLOW §6.1 "안전 동작은 허용").
+- **A3. 목적의 안전 기본 후보** 인 의도(예: ESCALATE)는 DC 가 불완전해도 D 가 막지 않는다(DATA_FLOW §6.1). A7 은 그대로 본다.
+- **A4. shadow 의 뜻**: 판정은 모드와 무관하다. shadow 에서는 런타임이 자기 중재 결정대로 진행하고, GuardResult 는 기록 · 대조에만 쓴다.
+
+## 5. 다음 (future — 이번에 하지 않음)
+
+- **F1** 술어 언어(`guard/predicate.py`)와 인자 검사(`guard/params.py`)가 MS 와 **같은 뜻으로 두 곳에** 있다. Guard 가 MS 를 import 할 수 없어서다. 지금은 대조 시험이 같음을 붙든다. Model 계약(ActionSpec · 술어)의 공용 집이 생기면 옮긴다.
+- **F2** BD-36: `confidence.kind=ordinal` 은 문턱으로 쓰지 못한다. StateView 에 `confidence` 칸이 아직 없다.
+- **F3** GuardResult 에 규칙 판본(`guard-rules/1`)을 실을지.
+- **F4** MS shadow 배선: MS 런타임이 Arbiter 옆에서 `evaluate` 를 부르고 GuardResult 를 DecisionRecord 에 싣는다. MS 파일이라 MS 세션의 일이다(CMD-M15 의 ActionIntent 다음).
+- **F5** DC 의 결정 문맥(`complete` · `missing_required` · 유효성) → DCView 어댑터. DC 의 칸 이름과 맞춰야 한다.
+- **F6** OQ-17 의 값이 정해지면 enforce 를 켜고, 안전 동작 여럿 가운데 고르는 규칙을 넣는다.
+- **F7** `args_sig` · `deadline_ms`(BD-96 이 소비자가 생길 때로 미룬 것).
+
+## 6. 시험
+
+- 단위 시험: `tests/` 아래 꼴 · 입력 꼴 · 술어 · validate · guard · 명령 재료 · 경계(import · 의존 고정).
+- 닫는 쪽으로만: 이미 ALLOW 가 아닌 경우에 제약 일곱 가지를 하나씩 더해도 ALLOW 가 되지 않음을 확인한다. 360 경우 × 7 = 2,520 번 판정한다.
+- MS 대조: `eval/ms_contrast.py`.
+- 변이: `eval/mutation.py`.
