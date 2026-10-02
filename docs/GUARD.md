@@ -236,3 +236,7 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 - shadow 대 enforce **전수 대조**: 닫힘 성질의 경우 · 조인 것 전부(3,240) + DC 실제 문맥 8 × 행동 3 × used_keys 4(96) + MS 대조의 비교 전부(68,688). 모드 다름 0.
 - 변이: ★ enforce 에서만 ALLOW 를 더함 · ★ enforce 에서 VALIDATE 를 지나침 · 모드에 따라 rule 이 달라짐 · 모드에 따라 까닭이 달라짐 · 모르는 모드를 받음.
   - 뺀 것: enforce 를 거절하던 자리의 변이 둘 · 흔적 모듈 변이 하나. 대상 코드가 없어졌다.
+
+수치(G6): 단위 93 · 변이 **74/74 RED** · MS 대조 68,688 비교 다름 0 · 모델 다름 0 · 모드 다름 0 · `dc_fixtures --check` 같다.
+- 처음 돌렸을 때 변이 "모르는 모드를 받음" 이 **살아남았다**(73/74). 모드 검사를 빼도 GuardResult 꼴이 모르는 모드를 거절하며 `FormError` 를 냈다. `FormError` 는 `ValueError` 의 하위 클래스라 시험이 지나갔다. 그래서 시험이 그 `ValueError` 자체(판정 전 설정 거절)인지 보게 고쳤다 → 74/74.
+- 옆 저장소(통합 머리, 흔적을 지운 guard 를 옆에 둠): action `2f4791e` OK(`GuardUsesTheOneCopy` 통과) · MS `8b16895` OK(guard 시험 건너뜀 없음) · DC `b55ff04` OK · Telemetry `89d2887` OK.
