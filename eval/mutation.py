@@ -48,7 +48,7 @@ MUTANTS = [
      "[intent.action, intent.target, intent.args, intent.rationale]"),
     ("A8 열쇠에 판 없음", R, 'return f"{k}@{version}"', "return k"),
     ("D 생략", R, "if spec.risk in model.risky and", "if False and"),
-    ("D 낡은 키를 보지 않음", R, "(not dc.complete or dc.stale_keys):", "(not dc.complete):"),
+    ("D 낡은 키를 보지 않음", R, "(not dc.complete or stale):", "(not dc.complete):"),
     ("D 가 안전 기본 후보도 막음", R, "and it.action not in dc.default_decision and", "and"),
     ("SAFE_ACTION 을 후보 밖에서", R, " and dc.default_action in dc.default_decision:", ":"),
     ("rule 순서를 MS 와 다르게", R, 'GUARD_ORDER = ("D", "A5", "A6", "A7", "A8")', 'GUARD_ORDER = ("D", "A6", "A5", "A7", "A8")'),
