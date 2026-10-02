@@ -8,7 +8,7 @@ Guard 패키지는 MS 를 import 하지 않는다. 이 파일(시험 · 평가)�
 - 세계: MS `ms/examples/datacenter.json` + 텔레메트리(MS 시험의 `world()` 와 같다). MS 의 맥락 정책으로 맥락을 짓는다.
 - MS 맥락 → DCView(offers · seen · decisions · handles. complete=True · 낡은 키 없음 -- MS 맥락에는 완전성 칸이 없다)
 - MS State Manager → StateView(실체마다 판 · 속성 값 · `is_stale`) -- 맥락을 지은 **뒤**, 판정 직전에 읽는다
-- MS ToolRegistry · grants → GuardModel
+- MS 도구 정의 → action ActionModel → GuardModel(`from_action_model`, CMD-G5). ToolRegistry 에서 바로 지은 것과 같은지도 센다
 - MS Proposal → ActionIntent(dc_id 고정, policy `ms-cr@cr-3` (BD-97 Q2), author_kind `llm`)
 - A8: Guard 가 ALLOW 한 뒤 `repeat_key` 를 StateView.allowed 에 더한다(MS 는 Arbiter 안에 둔다)
 
@@ -72,9 +72,18 @@ def state_from_ms(m, allowed) -> "StateView | None":
 
 
 def model_from_ms(reg, grants) -> GuardModel:
+    """MS ToolRegistry 에서 바로 지은 GuardModel(G1 의 길). 대조에서는 아래 ActionModel 길과 같음을 확인하는 데만 쓴다."""
     specs = {t.name: ActionSpec(t.name, t.target_model, dict(t.params), tuple(t.preconditions), t.risk)
              for t in reg.tools.values()}
     return GuardModel(specs, frozenset(grants))
+
+
+def model_from_action(tools, grants) -> GuardModel:
+    """CMD-G5 의 길: MS 도구 정의(JSON) → action `ActionSpec.from_tool` → `ActionModel` → `GuardModel.from_action_model`.
+    MS 의 내장 `retrieve` 는 도구 정의에 없다(의도가 되지 않으므로 Guard 도 A0 로 막는다, BD-97)."""
+    from action.spec import ActionModel, ActionSpec as SpecA
+    am = ActionModel("ms-datacenter@contrast", tuple(SpecA.from_tool(t, "1") for t in tools))
+    return GuardModel.from_action_model(am, grants=grants)
 
 
 def intent_from_ms(p) -> "ActionIntent | None":
@@ -151,7 +160,10 @@ def run() -> dict:
            "diffs": []}
     for budget, grants, kind in itertools.product(BUDGETS, GRANTS, PERTURB):
         spec, m, reg, ctx, clock, arb = world(ms, budget, grants)
-        dc, model = dc_from_ms(ctx), model_from_ms(reg, grants)
+        dc, model = dc_from_ms(ctx), model_from_action(spec["tools"], grants)
+        hand = model_from_ms(reg, grants)                # 두 길이 같은 행동 명세를 내야 한다(retrieve 만 빼고)
+        if {k: v for k, v in hand.specs.items() if k != "retrieve"} != model.specs or hand.grants != model.grants:
+            rep["model_mismatch"] = rep.get("model_mismatch", 0) + 1
         mm = _perturb(ms, kind, m, clock)
         allowed: set = set()
         for p in proposals(ms, spec, ctx) * 2:          # 두 번 -- 둘째 바퀴에서 되풀이(A8)가 걸린다
@@ -186,11 +198,11 @@ def main() -> int:
         return 2
     print(f"MS: {rep['ms']}")
     print(f"경우 {rep['cases']} · 비교 {rep['compared']} · 같음 {rep['matched']} · 다름 {len(rep['diffs'])} · "
-          f"범위 밖 {rep['out_of_scope']}")
+          f"범위 밖 {rep['out_of_scope']} · 모델 다름 {rep.get('model_mismatch', 0)}")
     print("MS 판정 규칙별 수: " + " · ".join(f"{k} {v}" for k, v in sorted(rep["by_rule"].items())))
     for x in rep["diffs"][:40]:
         print(json.dumps(x, ensure_ascii=False))
-    return 1 if rep["diffs"] else 0
+    return 1 if rep["diffs"] or rep.get("model_mismatch") else 0
 
 
 if __name__ == "__main__":

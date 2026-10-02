@@ -18,12 +18,12 @@ from __future__ import annotations
 
 import json
 
+from action import predicate
 from action.canonical import digest
 from action.forms import ActionIntent, ContractError
+from action.params import check_args
 
-from . import predicate
 from .forms import ALLOW, DENY, PASS, SAFE_ACTION, SHADOW, GuardResult, ValidationResult
-from .params import check_args
 from .views import DCView, GuardModel, StateView
 
 GRANT_RISKS = ("external", "irreversible")          # A7: 허가가 있어야 하는 위험 등급(MS 와 같다)

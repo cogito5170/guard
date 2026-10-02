@@ -18,8 +18,7 @@ sys.path.insert(0, str(ROOT))
 from eval.dc_fixtures import find_dc  # noqa: E402
 from eval.ms_contrast import find_ms  # noqa: E402
 
-R, F, V, P, A, C, D = ("guard/rules.py", "guard/forms.py", "guard/views.py", "guard/predicate.py", "guard/params.py",
-                       "guard/command.py", "guard/dc_adapter.py")
+R, F, V, C, D = "guard/rules.py", "guard/forms.py", "guard/views.py", "guard/command.py", "guard/dc_adapter.py"
 OQ17 = 'raise ValueError(f"mode={mode!r}: OQ-17(안전 동작 전순서) 전에는 shadow 만 켠다")'
 # (이름, 파일, 바꿀 글, 바꿀 것). ★ = "ALLOW 를 더하는" 변이(닫는 쪽으로만을 깨는 것)
 MUTANTS = [
@@ -61,20 +60,6 @@ MUTANTS = [
     ("A2 겨냥 없음 허용", R, "if None not in targets:", "if False:"),
     ("A3 생략", R, "if it.target not in targets:", "if False:"),
     ("A4 생략", R, '    if bad:\n        return "A4"', '    if False:\n        return "A4"'),
-    ("모르는 인자 허용", A, 'out = [f"모르는 인자 {k}" for k in args if k not in params]', "out = []"),
-    ("필수 인자 생략 허용", A, 'if ps.get("required", True):', "if False:"),
-    ("bool 을 정수로", A, "        if isinstance(v, bool) or not isinstance(v, int):", "        if not isinstance(v, int):"),
-    ("2.5 를 정수로", A, "if isinstance(v, float) and v.is_integer():", "if isinstance(v, float):"),
-    ("최소 생략", A, 'if ps.get("min") is not None and v < ps["min"]:', "if False:"),
-    ("최대 생략", A, 'if ps.get("max") is not None and v > ps["max"]:', "if False:"),
-    ("문자열 검사 생략", A, '        if not isinstance(v, str):\n            return f"{name}: 문자열',
-     '        if False:\n            return f"{name}: 문자열'),
-    ("없는 속성을 참으로", P, "    if values.get(prop) is None:\n        return False\n    rhs",
-     "    if values.get(prop) is None:\n        return True\n    rhs"),
-    ("비교 불가를 참으로", P, "    except TypeError:\n        return False", "    except TypeError:\n        return True"),
-    ("걸린 속성이 없을 때 원값", P, "        if ref is None or isinstance(ref, bool) or not isinstance(ref, (int, float)):\n            return None",
-     "        if ref is None or isinstance(ref, bool) or not isinstance(ref, (int, float)):\n            return 0"),
-    ("props_of 가 걸린 속성을 빠뜨림", P, ' + ([p[2]["prop"]] if len(p) > 2 and isinstance(p[2], dict) and "prop" in p[2] else [])', ""),
     ("꼴을 연다(모르는 칸)", F, 'errs = [f"모르는 칸 {k!r}" for k in sorted(set(d) - known, key=str)]', "errs = []"),
     ("id 를 다시 계산하지 않음", F, "if d[cls.ID] != obj.id:", "if False:"),
     ("판본을 보지 않음", F, "if self.schema != self.SCHEMA:", "if False:"),
@@ -113,7 +98,16 @@ MUTANTS = [
      'default_action=(purpose.get("default_decision") or [None])[0]'),
     ("목적 행동을 내놓지 않음", D, "offered = {a: [None] for a in acts}", "offered = {}"),
     ("DCView 검사 생략", D, "    view.check()\n", ""),
-    ("Guard 가 MS 를 import", R, "from . import predicate\n", "from . import predicate\nif False:\n    import ms  # noqa\n"),
+    ("Guard 가 MS 를 import", R, "from action import predicate\n", "from action import predicate\nif False:\n    import ms  # noqa\n"),
+    ("★ 자기 술어로 돌아감(사전조건 언제나 참)", R, "from action import predicate\n",
+     "from action import predicate as _p\nclass predicate:\n    props_of = staticmethod(_p.props_of)\n    holds = staticmethod(lambda p, v: True)\n"),
+    ("자기 인자 검사로 돌아감(검사 안 함)", R, "from action.params import check_args\n",
+     "def check_args(params, args):\n    return []\n"),
+    ("흔적 모듈에 자기 인자 검사가 끼어듦", "guard/params.py", "from action.params import TYPES, check_args  # noqa: F401\n",
+     "from action.params import TYPES  # noqa: F401\n\n\ndef check_args(params, args):\n    return []\n"),
+    ("행동 명세가 ActionModel 의 위험 등급을 버림", V, "specs = {s.name: ActionSpec(**to_guard_spec(s)) for s in model.specs}",
+     'specs = {s.name: ActionSpec(**{**to_guard_spec(s), "risk": "local"}) for s in model.specs}'),
+    ("ActionModel 길이 허가를 버림", V, "return cls(specs, frozenset(grants), tuple(risky))", "return cls(specs, frozenset(), tuple(risky))"),
 ]
 
 UNIT = ["tests.test_boundary", "tests.test_command", "tests.test_dc_adapter", "tests.test_forms", "tests.test_guard",

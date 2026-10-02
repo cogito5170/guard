@@ -14,6 +14,9 @@ class AgainstMS(unittest.TestCase):
         self.assertEqual(self.rep["diffs"][:5], [])
         self.assertEqual(self.rep["matched"], self.rep["compared"])
 
+    def test_action_model_path_equals_registry_path(self):
+        self.assertEqual(self.rep.get("model_mismatch", 0), 0)
+
     def test_every_rule_is_exercised(self):
         for rule in ("0", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "E"):
             self.assertGreater(self.rep["by_rule"].get(rule, 0), 0, rule)

@@ -6,14 +6,16 @@ Guard 는 Policy · CR · MS 를 import 하지 않는다(BD-07). 그래서 입�
 DCView      한 결정이 본 문맥. VALIDATE 의 근거(A1–A3)와 GUARD 의 "본 판"(A5) · 완전성(D)
 StateView   배차 직전의 **지금** 상태. 실체마다 판 · 속성 값 · 낡음. 그리고 이미 ALLOW 한 열쇠(A8)
 GuardModel  ActionSpec(Model, BD-31 의 투영: 대상 모형 · 인자 · 사전조건 · 위험 등급) · 허가 · 위험 등급의 정의
+
+행동 명세의 집은 action 이다(`action-spec/1` · `action-model/1`, BD-109). `GuardModel.from_action_model` 이 `to_guard_spec` 으로
+투영해 짓는다. 허가(grants) · 막는 위험 등급(risky)은 배치마다 다른 운영자 설정이라 GuardModel 에 남는다. 술어는 action 의 한 벌이다(BD-108).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
 
-from . import predicate
-
-RISKS = ("read", "local", "external", "irreversible")
+from action import predicate
+from action.spec import RISKS, ActionModel, to_guard_spec
 DEFAULT_RISKY = ("external", "irreversible")       # D 가 막는 위험 등급(가정 -- docs/GUARD.md §4)
 
 
@@ -147,6 +149,17 @@ class GuardModel:
     specs: dict                       # 이름 -> ActionSpec
     grants: frozenset = frozenset()   # external · irreversible 을 허락한 행동 이름(A7)
     risky: tuple = DEFAULT_RISKY      # DC 가 불완전 · 낡았을 때 막는 위험 등급(D)
+
+    @classmethod
+    def from_action_model(cls, model: ActionModel, grants=(), risky=DEFAULT_RISKY) -> "GuardModel":
+        """행동 명세는 ActionModel 에서(`to_guard_spec`), 허가 · 위험 등급은 운영자 설정으로(CMD-G5 · BD-109)."""
+        if not isinstance(model, ActionModel):
+            raise ViewError(f"ActionModel 이 아니다 ({type(model).__name__})")
+        bad = [r for r in risky if r not in RISKS]
+        if bad:
+            raise ViewError(f"GuardModel.risky: 모르는 위험 등급 {bad}")
+        specs = {s.name: ActionSpec(**to_guard_spec(s)) for s in model.specs}
+        return cls(specs, frozenset(grants), tuple(risky))
 
     @classmethod
     def from_dict(cls, d: dict) -> "GuardModel":

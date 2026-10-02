@@ -86,7 +86,7 @@ ARBITRATE 는 짓지 않았다. 지금 후보는 하나뿐이고, BD-24 는 "옮
 
 ## 5. 다음 (future — 이번에 하지 않음)
 
-- **F1** 술어 언어(`guard/predicate.py`)와 인자 검사(`guard/params.py`)가 MS 와 **같은 뜻으로 두 곳에** 있다. Guard 가 MS 를 import 할 수 없어서다. 지금은 대조 시험이 같음을 붙든다. Model 계약(ActionSpec · 술어)의 공용 집이 생기면 옮긴다.
+- **F1** ~~술어 언어와 인자 검사가 MS 와 같은 뜻으로 두 곳에 있다~~ → **CMD-G5 에서 닫음**: action 의 한 벌(`action.predicate` · `action.params`)을 쓴다(§10).
 - **F2** BD-36: `confidence.kind=ordinal` 은 문턱으로 쓰지 못한다. StateView 에 `confidence` 칸이 아직 없다.
 - **F3** GuardResult 에 규칙 판본(`guard-rules/1`)을 실을지.
 - **F4** MS shadow 배선: MS 런타임이 Arbiter 옆에서 `evaluate` 를 부르고 GuardResult 를 DecisionRecord 에 싣는다. MS 파일이라 MS 세션의 일이다(CMD-M15 의 ActionIntent 다음).
@@ -198,3 +198,21 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 | exec_* (기본 ESCALATE · STOP, ActionSpec 있음) | — | SAFE_ACTION | SAFE_ACTION (그대로) |
 
 시험(G4): 단위 81 · 변이 **78/78 RED**(★ 실행기 밖 행동으로 갈아 끼움 포함) · MS 대조 68,688 비교 다름 0(그대로).
+
+## 10. action 한 벌로 옮김 (CMD-G5, BD-108 · BD-109)
+
+- action 의존을 `3995fdb3ba487f31d841d3e11b710e64f0d523db` 로 다시 고정했다(`pyproject.toml`). 설치본의 `direct_url.json` `commit_id` 로 확인했다.
+- 술어 · 인자 검사:
+  - `guard/rules.py` · `guard/views.py` 가 `action.predicate` · `action.params.check_args` 를 바로 import 한다.
+  - guard 안의 자기 구현은 지웠다. 경계 시험 `OneLanguage` 가 붙든다: 모듈 최상위의 `holds` · `check` · `props_of` · `check_args` · `OPS` 가 없다.
+  - **옮김 흔적**: `guard/predicate.py` · `guard/params.py` 는 action 을 다시 내보내기만 하는 두 줄 모듈로 남겼다.
+    - 까닭: action 의 대조 시험(`SameAsGuard` · `Params.test_same_as_guard`)이 옆 저장소의 `guard.predicate` · `guard.params` 를 import 한다.
+    - 지우면 guard 를 옆에 둔 action 시험이 ERROR 3 이 된다. 쟀다: 지운 상태에서 `GUARD_REPO=../guard` 로 돌리면 ERROR 3.
+    - 경계 시험이 두 모듈에 import 말고 아무것도 없음을 붙든다. action 이 그 시험을 걷으면 지운다.
+- 행동 명세: `GuardModel.from_action_model(ActionModel, grants=(), risky=DEFAULT_RISKY)`.
+  - 명세는 `action.spec.to_guard_spec` 의 투영이다(이름 · 대상 모형 · 인자 · 사전조건 · 위험).
+  - 사후조건 · 창 · 판본 · 설명은 Guard 로 오지 않는다.
+  - 허가 · 막는 위험 등급은 운영자 설정으로 남는다. OQ-17 의 안전 동작 순서는 아직 넣지 않았다(E3 enforce 때).
+  - 위험 등급 목록(`RISKS`)도 action 의 것을 쓴다.
+- 기존 공개 API(`ActionSpec(name, target_model, params, preconditions, risk)` · `GuardModel(specs, grants)` 등)는 그대로다. MS `ms/guard_shadow.py` 가 그대로 쓴다.
+- MS 대조: GuardModel 을 **ActionModel 길**(MS 도구 정의 → `ActionSpec.from_tool` → `ActionModel` → `from_action_model`)로 짓는다. ToolRegistry 에서 바로 지은 것과 행동 명세가 같은지도 센다(`retrieve` 만 빼고, 모델 다름 0).

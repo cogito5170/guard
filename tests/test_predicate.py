@@ -1,6 +1,6 @@
 import unittest
 
-from guard import predicate as P
+from action import predicate as P  # guard 는 술어 한 벌을 action 에서 쓴다(BD-108, CMD-G5)
 
 
 class Predicate(unittest.TestCase):
