@@ -216,3 +216,7 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
   - 위험 등급 목록(`RISKS`)도 action 의 것을 쓴다.
 - 기존 공개 API(`ActionSpec(name, target_model, params, preconditions, risk)` · `GuardModel(specs, grants)` 등)는 그대로다. MS `ms/guard_shadow.py` 가 그대로 쓴다.
 - MS 대조: GuardModel 을 **ActionModel 길**(MS 도구 정의 → `ActionSpec.from_tool` → `ActionModel` → `from_action_model`)로 짓는다. ToolRegistry 에서 바로 지은 것과 행동 명세가 같은지도 센다(`retrieve` 만 빼고, 모델 다름 0).
+
+시험(G5): 단위 88 · 변이 **72/72 RED** · MS 대조 68,688 비교 다름 0 · 모델 다름 0 · `dc_fixtures --check` 같다.
+- 변이 수가 78 → 72 로 준 까닭: 지운 자기 술어(4) · 인자(7) 파일을 겨냥하던 11 개를 뺐다. 그 언어의 변이는 이제 action 의 것이다. 새로 넣은 것은 5 개다: ★ 자기 술어로 돌아감 · 자기 인자 검사로 돌아감 · 흔적 모듈에 구현이 끼어듦 · ActionModel 길의 위험 등급 · 허가를 버림.
+- 옆 저장소(통합 머리, 새 guard 를 옆에 둠): MS `53b8b6c` 186 OK(건너뜀 9 — Telemetry 경로 · llmsensor) · action `3995fdb` OK(`GUARD_REPO` 를 주면 건너뜀 3 — health 없음) · DC `ce3a0bc` OK · Telemetry `89d2887` OK.
