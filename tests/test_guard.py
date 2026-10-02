@@ -122,6 +122,15 @@ class IncompleteDC(unittest.TestCase):
         r = g(self.reboot(), d=dc(complete=False, default_action=None))
         self.assertEqual((r.verdict, r.rule, r.safe_action), (DENY, "D", None))
 
+    def test_safe_action_must_be_an_executor_action(self):
+        # BD-104: 기본 결정이 ActionSpec 에 없는 행동(예: CR 의 KEEP)이면 갈아 끼우지 않고 DENY(D)
+        d = dc(complete=False, default_decision=("KEEP",), default_action="KEEP")
+        r = g(self.reboot(), d=d)
+        self.assertEqual((r.verdict, r.rule, r.safe_action), (DENY, "D", None))
+        self.assertIn("실행기 행동이 아니다", r.reasons[-1])
+        d = dc(complete=False, default_decision=("stop", "escalate"), default_action="stop")    # 후보 안이지만 ActionSpec 없음
+        self.assertEqual(g(self.reboot(), d=d).verdict, DENY)
+
     def test_safe_action_only_from_default_decision(self):
         # DCView.check 를 거치지 않고 지은 문맥이라도 후보 밖의 기본 행동으로는 갈아 끼우지 않는다
         bad = dataclasses.replace(dc(complete=False), default_action="reboot")

@@ -50,6 +50,7 @@ MUTANTS = [
     ("D 생략", R, "if spec.risk in model.risky and", "if False and"),
     ("D 낡은 키를 보지 않음", R, "(not dc.complete or stale):", "(not dc.complete):"),
     ("D 가 안전 기본 후보도 막음", R, "and it.action not in dc.default_decision and", "and"),
+    ("★ 실행기 밖 행동으로 갈아 끼움", R, "        if dc.default_action not in model.specs:", "        if False:"),
     ("SAFE_ACTION 을 후보 밖에서", R, " and dc.default_action in dc.default_decision:", ":"),
     ("rule 순서를 MS 와 다르게", R, 'GUARD_ORDER = ("D", "A5", "A6", "A7", "A8")', 'GUARD_ORDER = ("D", "A6", "A5", "A7", "A8")'),
     ("A0 다른 DC 허용", R, "if it.dc_id != dc.dc_id:", "if False:"),

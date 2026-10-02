@@ -13,11 +13,10 @@ from eval import dc_fixtures
 FIX = json.loads((pathlib.Path(__file__).parent / "fixtures" / "dc_contexts.json").read_text(encoding="utf-8"))
 CASES = {c["name"]: c for c in FIX}
 
-# 목적 단위 행동(겨냥 없음) + 런타임이 넘기는 겨냥 있는 행동 둘
+# 실행기 행동: 목적 단위 행동(겨냥 없음) + 런타임이 넘기는 겨냥 있는 행동 둘. KEEP(CR 안의 맥락 결정)은 실행기 행동이 아니다(BD-100)
 MODEL = GuardModel({s.name: s for s in [
     ActionSpec("CONTINUE", None, risk="local"), ActionSpec("RETRY", None, risk="external"),
     ActionSpec("ESCALATE", None, risk="external"), ActionSpec("STOP", None, risk="local"),
-    ActionSpec("KEEP", None, risk="local"),
     ActionSpec("reboot", "Server", preconditions=(("status", "==", "critical"),), risk="irreversible"),
     ActionSpec("throttle", "Server", {"level": {"type": "integer", "min": 1, "max": 3}},
                (("status", "in", ["hot", "critical"]),), "local"),
@@ -154,12 +153,16 @@ class DStandsOnRealContexts(unittest.TestCase):
     def test_used_stale_keys_trigger_D(self):
         """BD-103 판정표의 둘째 반: 의도가 낡은 키를 썼으면 SAFE_ACTION."""
         for name, used, want in [("exec_stale_optional", ("tool[Bash].tool_execution_health",), "ESCALATE"),
-                                 ("cr_query_stale", ("query:hot",), "KEEP"),
-                                 ("cr_query_stale", ("hot/srv07.fan_rpm",), "KEEP")]:
+                                 ("cr_query_stale", ("query:hot",), None),
+                                 ("cr_query_stale", ("hot/srv07.fan_rpm",), None)]:
             v = view(name, offers=OFFERS, seen=SEEN)
             it = ActionIntent(v.dc_id, "ms-cr@cr-3", "reboot", "srv1", {}, "시험", used, "llm")
             _, r = evaluate(it, v, STATE, MODEL)
-            self.assertEqual((r.verdict, r.rule, r.safe_action), (SAFE_ACTION, "D", want), (name, used))
+            if want is None:                      # 기본 KEEP 은 실행기 행동이 아니다 → DENY(D) (BD-104)
+                self.assertEqual((r.verdict, r.rule, r.safe_action), (DENY, "D", None), (name, used))
+                self.assertIn("실행기 행동이 아니다", r.reasons[-1])
+            else:
+                self.assertEqual((r.verdict, r.rule, r.safe_action), (SAFE_ACTION, "D", want), (name, used))
         v = view("cr_query_stale", offers=OFFERS, seen=SEEN)                 # 다른 질의 · 신선한 키를 쓴 것은 걸지 않는다
         for used in (("query:cold",), ("session.context_pressure",)):
             it = ActionIntent(v.dc_id, "ms-cr@cr-3", "reboot", "srv1", {}, "시험", used, "llm")

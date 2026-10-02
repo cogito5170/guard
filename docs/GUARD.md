@@ -24,7 +24,7 @@ evaluate(intent, dc, state, model)
         A7 external · irreversible 인데 허가 없음
         A8 같은 (행동 · 대상 · 인자, 판)을 이미 ALLOW 함
         → 걸린 것 없음: ALLOW
-        → D 가 걸렸고 DC 의 기본 행동이 후보 안에 있음: SAFE_ACTION(그 행동)
+        → D 가 걸렸고 DC 의 기본 행동이 후보 안에 있고 실행기 행동(ActionSpec)임: SAFE_ACTION(그 행동)
         → 그 밖: DENY
         → 예외: DENY(rule E)
 ```
@@ -181,3 +181,18 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 | 〃 | `query:hot` 또는 `hot/srv07.fan_rpm` | SAFE_ACTION → KEEP |
 
 시험(G3): 단위 80 · 변이 **77/77 RED**(G2 의 71 + 범위 변이 6) · MS 대조 68,688 비교 다름 0(그대로).
+
+## 9. SAFE_ACTION 은 실행기 행동으로만 (CMD-G4, BD-104)
+
+- D 가 갈아 끼울 `default_action` 이 GuardModel 의 ActionSpec 에 없으면 **DENY(D)** 를 낸다.
+  - 까닭 글: "안전 기본 X 은 실행기 행동이 아니다(ActionSpec 없음) -- 갈아 끼우지 않는다".
+- 발견한 곳: MS shadow 배선(MS `bb90625`).
+  - MS 가 읽는 목적 `context_runtime` 의 기본 결정은 `KEEP` 이다.
+  - KEEP 은 CR 안의 맥락 결정이고, 실행기 행동이 아니다(BD-100).
+  - 그대로 두면 enforce 에서 도구 의도가 실행기 밖 행동으로 바뀐다.
+- 규칙 순서(D 가 A7 보다 앞섬)는 그대로다. 허가 없는 reboot 도 이 문맥에서는 DENY(D) 다.
+
+| 문맥 | 의도의 used_keys | G3 | **G4** |
+|---|---|---|---|
+| cr_query_stale (기본 KEEP) | `query:hot` · `hot/srv07.fan_rpm` | SAFE_ACTION → KEEP | **DENY (D)** |
+| exec_* (기본 ESCALATE · STOP, ActionSpec 있음) | — | SAFE_ACTION | SAFE_ACTION (그대로) |

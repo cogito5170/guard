@@ -6,7 +6,7 @@
 - GUARD 는 걸린 규칙을 **모두** 본다(제약은 논리곱, DATA_FLOW §6.4). `rule` 은 MS 와 같은 순서에서 처음 걸린 것이고,
   `reasons` 에 걸린 것 전부가 있다. MS 는 처음 걸린 것에서 멈춘다.
 - D(새): DC 가 불완전하거나, 필수 키 · 의도가 쓴 키 가운데 낡은 것이 있으면 위험 등급 행동을 막는다(DATA_FLOW §6.5 · BD-103). 목적의 기본 행동이 있으면
-  SAFE_ACTION 으로 갈아 끼우고, 없으면 DENY 다.
+  SAFE_ACTION 으로 갈아 끼우고, 없거나 실행기 행동(GuardModel 의 ActionSpec)이 아니면 DENY 다(BD-104).
 
 닫는 쪽으로만: `evaluate` 는 VALIDATE 가 막은 의도를 GUARD 로 넘기지 않는다. GUARD 가 ALLOW 를 내는 길은 걸린 규칙이
 하나도 없을 때 하나뿐이다. 예외는 DENY(rule E)다.
@@ -174,6 +174,9 @@ def _guard(it: ActionIntent, dc: DCView, state: StateView, model: GuardModel, mo
     rule = next(r for r in GUARD_ORDER if r in fails)
     reasons = [f"[{r}] {w}" for r in GUARD_ORDER if r in fails for w in fails[r]]
     if "D" in fails and dc.default_action is not None and dc.default_action in dc.default_decision:
+        if dc.default_action not in model.specs:            # BD-104: 실행기 행동(ActionSpec)이 아니면 갈아 끼우지 않는다
+            reasons.append(f"[D] 안전 기본 {dc.default_action} 은 실행기 행동이 아니다(ActionSpec 없음) -- 갈아 끼우지 않는다")
+            return GuardResult(it.id, DENY, mode, rule, refs, reasons, None)
         reasons.append(f"[D] 목적의 기본 행동 {dc.default_action} 로 갈아 끼운다")
         return GuardResult(it.id, SAFE_ACTION, mode, rule, refs, reasons, dc.default_action)
     return GuardResult(it.id, DENY, mode, rule, refs, reasons, None)
