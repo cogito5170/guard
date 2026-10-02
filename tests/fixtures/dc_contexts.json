@@ -1,0 +1,3550 @@
+[
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "RETRY",
+    "ESCALATE",
+    "STOP"
+   ],
+   "complete": true,
+   "default_action": "ESCALATE",
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "id": "dc-530da5ffd5eb6f3c",
+   "missing_required": [],
+   "stale_keys": []
+  },
+  "name": "exec_complete",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "RETRY",
+     "ESCALATE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "ESCALATE",
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-3",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      "AVAILABLE",
+      "INFERRED"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      "NO_STALL_DETECTED",
+      "INFERRED"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      "RECOVERED_FAILURES",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "530da5ffd5eb6f3ca08267afb425ca3c7e787b109641d2d429022831ccfcc044",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {
+     "human_reviewer": true,
+     "retry_budget": true
+    },
+    "missing": {},
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/progress_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "RETRY",
+    "ESCALATE",
+    "STOP"
+   ],
+   "complete": false,
+   "default_action": "ESCALATE",
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "id": "dc-43e3a3a063d44bb1",
+   "missing_required": [
+    "task.progress_state"
+   ],
+   "stale_keys": []
+  },
+  "name": "exec_incomplete_escalate",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "RETRY",
+     "ESCALATE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "ESCALATE",
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-3",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      "AVAILABLE",
+      "INFERRED"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      "RECOVERED_FAILURES",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "43e3a3a063d44bb16b9df7ec9c76ad0b0c6eeadfe4228a5f11b02b315c701878",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {
+     "human_reviewer": true,
+     "retry_budget": true
+    },
+    "missing": {},
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "STOP"
+   ],
+   "complete": false,
+   "default_action": "STOP",
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "id": "dc-078c54dcd06b9fb0",
+   "missing_required": [
+    "task.progress_state"
+   ],
+   "stale_keys": []
+  },
+  "name": "exec_incomplete_stop",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "STOP",
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-3",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      "AVAILABLE",
+      "INFERRED"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      "RECOVERED_FAILURES",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "078c54dcd06b9fb0d6b33cf88c382a85e860d27c25721b8f76165aac67f71875",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {},
+    "missing": {
+     "ESCALATE": [
+      "human_reviewer"
+     ],
+     "RETRY": [
+      "retry_budget"
+     ]
+    },
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "RETRY",
+    "ESCALATE",
+    "STOP"
+   ],
+   "complete": true,
+   "default_action": "ESCALATE",
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "id": "dc-705c6414336dc47c",
+   "missing_required": [],
+   "stale_keys": [
+    "tool[Bash].tool_execution_health"
+   ]
+  },
+  "name": "exec_stale_optional",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "RETRY",
+     "ESCALATE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "ESCALATE",
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-3",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      "AVAILABLE",
+      "INFERRED"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      "NO_STALL_DETECTED",
+      "INFERRED"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      null,
+      "STALE"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "705c6414336dc47cb1bd42bd9a1d1f46f1bc2665ed16da5750dcdab4b041c7c2",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {
+     "human_reviewer": true,
+     "retry_budget": true
+    },
+    "missing": {},
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/progress_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [
+       {
+        "code": "STALE_TTL",
+        "detail": "나이 1200000ms > 600000ms"
+       }
+      ],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": -200000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": "RECOVERED_FAILURES"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "RETRY",
+    "ESCALATE",
+    "STOP"
+   ],
+   "complete": false,
+   "default_action": "ESCALATE",
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "id": "dc-af0a57f1fdde03ae",
+   "missing_required": [
+    "runtime.rate_limit_state"
+   ],
+   "stale_keys": [
+    "runtime.rate_limit_state"
+   ]
+  },
+  "name": "exec_stale_required",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [
+    "ESCALATE",
+    "STOP"
+   ],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "RETRY",
+     "ESCALATE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "ESCALATE",
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-3",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      null,
+      "STALE"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      "NO_STALL_DETECTED",
+      "INFERRED"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      "RECOVERED_FAILURES",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "af0a57f1fdde03aef9c6abe28a2defb5a626883cf49a7104fffe527c4ea0ccf0",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {
+     "human_reviewer": true,
+     "retry_budget": true
+    },
+    "missing": {},
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [
+       {
+        "code": "STALE_TTL",
+        "detail": "나이 1200000ms > 600000ms"
+       }
+      ],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": -200000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": "AVAILABLE"
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/progress_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "CONTINUE",
+    "RETRY",
+    "ESCALATE",
+    "STOP"
+   ],
+   "complete": false,
+   "default_action": null,
+   "default_decision": [],
+   "id": "dc-24d0ff2ce505f99b",
+   "missing_required": [
+    "task.progress_state"
+   ],
+   "stale_keys": []
+  },
+  "name": "exec_no_default",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "",
+     "name": "CONTINUE",
+     "requires": []
+    },
+    {
+     "meaning": "",
+     "name": "RETRY",
+     "requires": [
+      "retry_budget"
+     ]
+    },
+    {
+     "meaning": "사람이 붙어 있어야",
+     "name": "ESCALATE",
+     "requires": [
+      "human_reviewer"
+     ]
+    },
+    {
+     "meaning": "",
+     "name": "STOP",
+     "requires": []
+    }
+   ],
+   "constraints": [
+    "max_cost_usd",
+    "max_retries",
+    "require_tool_confirmation"
+   ],
+   "default_decision": [],
+   "meaning": "실행을 이어 갈지 · 다시 할지 · 멈출지 정하기 위해 알아야 할 것",
+   "name": "execution_control",
+   "queries": [],
+   "query_sources": [],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_health",
+     "required": true,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "tool_execution_health",
+     "required": false,
+     "role": "tool",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "progress_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "completion_state",
+     "required": true,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "resource_state",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "rate_limit_state",
+     "required": true,
+     "role": "runtime",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "execution_interruption",
+     "required": false,
+     "role": "agent",
+     "source": "sensor",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "quality_state",
+     "required": false,
+     "role": "task",
+     "source": "sensor",
+     "values": null
+    }
+   ],
+   "version": "purpose-execution-guard-nodefault"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "CONTINUE",
+     "RETRY",
+     "ESCALATE",
+     "STOP"
+    ],
+    "as_of": {
+     "sensor": 1000000.0
+    },
+    "constraints": [],
+    "default_action": null,
+    "purpose": "execution_control",
+    "purpose_version": "purpose-execution-guard-nodefault",
+    "queries": {},
+    "states": {
+     "agent.execution_health": [
+      "UNRESOLVED_FAILURES",
+      "INFERRED"
+     ],
+     "agent.execution_interruption": [
+      null,
+      "UNKNOWN"
+     ],
+     "agent.resource_state": [
+      null,
+      "NOT_APPLICABLE"
+     ],
+     "runtime.rate_limit_state": [
+      "AVAILABLE",
+      "INFERRED"
+     ],
+     "task.completion_state": [
+      "RUNNING",
+      "INFERRED"
+     ],
+     "task.progress_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "task.quality_state": [
+      null,
+      "UNKNOWN"
+     ],
+     "tool[Bash].tool_execution_health": [
+      "RECOVERED_FAILURES",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "agent": "agent:r1",
+     "runtime": "runtime:r1",
+     "task": "task:r1",
+     "tool": [
+      "tool:r1:Bash"
+     ]
+    }
+   },
+   "digest": "24d0ff2ce505f99ba95a0953505151bf1614208010acee709ab71013a7c72b24",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {
+     "human_reviewer": true,
+     "retry_budget": true
+    },
+    "missing": {},
+    "queries": [],
+    "sources": {
+     "sensor": {
+      "config": "guard-fixture-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [
+       "agent:r1/execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "agent.execution_health",
+      "name": "execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.execution_interruption",
+      "name": "execution_interruption",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "agent:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "agent.resource_state",
+      "name": "resource_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "agent",
+      "rule_id": "resource_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "NOT_APPLICABLE",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "runtime:r1",
+      "evidence_refs": [
+       "runtime:r1/rate_limit_state_metric@1"
+      ],
+      "issues": [],
+      "key": "runtime.rate_limit_state",
+      "name": "rate_limit_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "runtime",
+      "rule_id": "rate_limit_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [
+       "task:r1/completion_state_metric@1"
+      ],
+      "issues": [],
+      "key": "task.completion_state",
+      "name": "completion_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "completion_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.progress_state",
+      "name": "progress_state",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "progress_state",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     },
+     {
+      "basis": "OBSERVED",
+      "entity": "task:r1",
+      "evidence_refs": [],
+      "issues": [],
+      "key": "task.quality_state",
+      "name": "quality_state",
+      "observed_at_ms": null,
+      "permanent": false,
+      "role": "task",
+      "rule_id": "",
+      "rule_version": null,
+      "source": "sensor",
+      "source_status": "UNKNOWN",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "DEFINITIONAL",
+      "entity": "tool:r1:Bash",
+      "evidence_refs": [
+       "tool:r1:Bash/tool_execution_health_metric@1"
+      ],
+      "issues": [],
+      "key": "tool[Bash].tool_execution_health",
+      "name": "tool_execution_health",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "tool",
+      "rule_id": "tool_execution_health",
+      "rule_version": 1,
+      "source": "sensor",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": 600000.0,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "KEEP",
+    "COMPRESS",
+    "SUMMARIZE",
+    "DROP"
+   ],
+   "complete": true,
+   "default_action": "KEEP",
+   "default_decision": [
+    "KEEP"
+   ],
+   "id": "dc-a67a0bc46fa050f0",
+   "missing_required": [],
+   "stale_keys": []
+  },
+  "name": "cr_complete",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "행을 그대로 싣는다",
+     "name": "KEEP",
+     "requires": []
+    },
+    {
+     "meaning": "같은 행을 표 꼴로 짧게",
+     "name": "COMPRESS",
+     "requires": []
+    },
+    {
+     "meaning": "못 실은 행 묶음을 결정론적 집계로",
+     "name": "SUMMARIZE",
+     "requires": []
+    },
+    {
+     "meaning": "못 실은 행을 손잡이로만 -- 꺼내는 도구가 있어야",
+     "name": "RETRIEVE",
+     "requires": [
+      "retrieve_tool"
+     ]
+    },
+    {
+     "meaning": "droppable 행을 뺀다(must 제외)",
+     "name": "DROP",
+     "requires": []
+    },
+    {
+     "meaning": "질의 하나를 통째로 미룬다 -- 꺼내는 도구가 있어야",
+     "name": "DEFER",
+     "requires": [
+      "retrieve_tool"
+     ]
+    }
+   ],
+   "constraints": [
+    "max_context_chars",
+    "max_output_tokens",
+    "tool_permission"
+   ],
+   "default_decision": [
+    "KEEP"
+   ],
+   "meaning": "MS Context Runtime 이 이번 요청의 맥락 · 프롬프트 계획을 정하기 위해 알아야 할 것",
+   "name": "context_runtime",
+   "queries": [],
+   "query_sources": [
+    "ms_world"
+   ],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "token_budget_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "context_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "latency_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "task_complexity",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "answer_reliability",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "correction_rate",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "retry_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    }
+   ],
+   "version": "purpose-cr-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "KEEP",
+     "COMPRESS",
+     "SUMMARIZE",
+     "DROP"
+    ],
+    "as_of": {
+     "ms": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "KEEP",
+    "purpose": "context_runtime",
+    "purpose_version": "purpose-cr-3",
+    "queries": {},
+    "states": {
+     "session.answer_reliability": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.context_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.correction_rate": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.latency_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.retry_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.task_complexity": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.token_budget_pressure": [
+      "LOW",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "session": "session:s1"
+    }
+   },
+   "digest": "a67a0bc46fa050f01c38960a41136f5bd67ced0aaba927e6ea8d3e85710d04c7",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {},
+    "missing": {
+     "DEFER": [
+      "retrieve_tool"
+     ],
+     "RETRIEVE": [
+      "retrieve_tool"
+     ]
+    },
+    "queries": [],
+    "sources": {
+     "ms": {
+      "model": "usage-model-1"
+     }
+    },
+    "states": [
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/answer_reliability_metric@1"
+      ],
+      "issues": [],
+      "key": "session.answer_reliability",
+      "name": "answer_reliability",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "answer_reliability",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/context_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.context_pressure",
+      "name": "context_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "context_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/correction_rate_metric@1"
+      ],
+      "issues": [],
+      "key": "session.correction_rate",
+      "name": "correction_rate",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "correction_rate",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/latency_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.latency_pressure",
+      "name": "latency_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "latency_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/retry_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.retry_pressure",
+      "name": "retry_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "retry_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/task_complexity_metric@1"
+      ],
+      "issues": [],
+      "key": "session.task_complexity",
+      "name": "task_complexity",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "task_complexity",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/token_budget_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.token_budget_pressure",
+      "name": "token_budget_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "token_budget_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ },
+ {
+  "dc_projection": {
+   "actions": [
+    "KEEP",
+    "COMPRESS",
+    "SUMMARIZE",
+    "DROP"
+   ],
+   "complete": true,
+   "default_action": "KEEP",
+   "default_decision": [
+    "KEEP"
+   ],
+   "id": "dc-c18c5bd6ca1dc327",
+   "missing_required": [],
+   "stale_keys": [
+    "hot/srv07.fan_rpm"
+   ]
+  },
+  "name": "cr_query_stale",
+  "purpose": {
+   "actions": [
+    {
+     "meaning": "행을 그대로 싣는다",
+     "name": "KEEP",
+     "requires": []
+    },
+    {
+     "meaning": "같은 행을 표 꼴로 짧게",
+     "name": "COMPRESS",
+     "requires": []
+    },
+    {
+     "meaning": "못 실은 행 묶음을 결정론적 집계로",
+     "name": "SUMMARIZE",
+     "requires": []
+    },
+    {
+     "meaning": "못 실은 행을 손잡이로만 -- 꺼내는 도구가 있어야",
+     "name": "RETRIEVE",
+     "requires": [
+      "retrieve_tool"
+     ]
+    },
+    {
+     "meaning": "droppable 행을 뺀다(must 제외)",
+     "name": "DROP",
+     "requires": []
+    },
+    {
+     "meaning": "질의 하나를 통째로 미룬다 -- 꺼내는 도구가 있어야",
+     "name": "DEFER",
+     "requires": [
+      "retrieve_tool"
+     ]
+    }
+   ],
+   "constraints": [
+    "max_context_chars",
+    "max_output_tokens",
+    "tool_permission"
+   ],
+   "default_decision": [
+    "KEEP"
+   ],
+   "meaning": "MS Context Runtime 이 이번 요청의 맥락 · 프롬프트 계획을 정하기 위해 알아야 할 것",
+   "name": "context_runtime",
+   "queries": [],
+   "query_sources": [
+    "ms_world"
+   ],
+   "refs": [
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "token_budget_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "context_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "latency_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "task_complexity",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "answer_reliability",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "correction_rate",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    },
+    {
+     "allow_stale": false,
+     "allowed_basis": [
+      "OBSERVED",
+      "DEFINITIONAL",
+      "RUNTIME_DECLARED",
+      "OPERATOR_ASSUMED",
+      "PROVIDER_DECLARED",
+      "VALIDATED_EXPERIMENT",
+      "EXTERNAL_LABEL"
+     ],
+     "max_age_ms": null,
+     "name": "retry_pressure",
+     "required": true,
+     "role": "session",
+     "source": "ms",
+     "values": null
+    }
+   ],
+   "version": "purpose-cr-3"
+  },
+  "record": {
+   "core": {
+    "actions": [
+     "KEEP",
+     "COMPRESS",
+     "SUMMARIZE",
+     "DROP"
+    ],
+    "as_of": {
+     "ms": 1000000.0,
+     "ms_world": 1000000.0
+    },
+    "constraints": [],
+    "default_action": "KEEP",
+    "purpose": "context_runtime",
+    "purpose_version": "purpose-cr-3",
+    "queries": {
+     "hot": {
+      "droppable": [],
+      "matched": 2,
+      "priority": 0,
+      "rows": [
+       {
+        "edges": [],
+        "id": "srv07",
+        "model": "Server",
+        "must": true,
+        "props": {
+         "fan_rpm": [
+          null,
+          "STALE"
+         ],
+         "status": [
+          "critical",
+          "INFERRED"
+         ]
+        }
+       },
+       {
+        "edges": [],
+        "id": "srv05",
+        "model": "Server",
+        "must": false,
+        "props": {
+         "status": [
+          "hot",
+          "INFERRED"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    "states": {
+     "session.answer_reliability": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.context_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.correction_rate": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.latency_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.retry_pressure": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.task_complexity": [
+      "LOW",
+      "INFERRED"
+     ],
+     "session.token_budget_pressure": [
+      "LOW",
+      "INFERRED"
+     ]
+    },
+    "subject": {
+     "session": "session:s1"
+    }
+   },
+   "digest": "c18c5bd6ca1dc327498e537fc1cf68fe52f4b03bfbf0ba165d6b03abd23eab3c",
+   "provenance": {
+    "builder": "dc-builder-4",
+    "capabilities": {},
+    "missing": {
+     "DEFER": [
+      "retrieve_tool"
+     ],
+     "RETRIEVE": [
+      "retrieve_tool"
+     ]
+    },
+    "queries": [
+     {
+      "allow_stale": false,
+      "issues": [],
+      "name": "hot",
+      "refs": [
+       [
+        "srv07",
+        "fan_rpm",
+        "t3",
+        -8000000.0,
+        "STALE"
+       ],
+       [
+        "srv07",
+        "status",
+        "derived:temp_c",
+        null,
+        "INFERRED"
+       ],
+       [
+        "srv05",
+        "status",
+        "derived:temp_c",
+        null,
+        "INFERRED"
+       ]
+      ],
+      "source": "ms_world",
+      "spec": "{\"model\":\"Server\",\"name\":\"hot\",\"where\":[[\"status\",\"in\",[\"hot\",\"critical\"]]]}",
+      "withheld": [
+       [
+        "srv07",
+        "fan_rpm",
+        1200
+       ]
+      ]
+     }
+    ],
+    "sources": {
+     "ms": {
+      "model": "usage-model-1"
+     },
+     "ms_world": {
+      "graph": "guard-fixture"
+     }
+    },
+    "states": [
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/answer_reliability_metric@1"
+      ],
+      "issues": [],
+      "key": "session.answer_reliability",
+      "name": "answer_reliability",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "answer_reliability",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/context_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.context_pressure",
+      "name": "context_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "context_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/correction_rate_metric@1"
+      ],
+      "issues": [],
+      "key": "session.correction_rate",
+      "name": "correction_rate",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "correction_rate",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/latency_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.latency_pressure",
+      "name": "latency_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "latency_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/retry_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.retry_pressure",
+      "name": "retry_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "retry_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/task_complexity_metric@1"
+      ],
+      "issues": [],
+      "key": "session.task_complexity",
+      "name": "task_complexity",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "task_complexity",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     },
+     {
+      "basis": "OPERATOR_ASSUMED",
+      "entity": "session:s1",
+      "evidence_refs": [
+       "session:s1/token_budget_pressure_metric@1"
+      ],
+      "issues": [],
+      "key": "session.token_budget_pressure",
+      "name": "token_budget_pressure",
+      "observed_at_ms": 940000.0,
+      "permanent": false,
+      "role": "session",
+      "rule_id": "token_budget_pressure",
+      "rule_version": 1,
+      "source": "ms",
+      "source_status": "INFERRED",
+      "time_base": null,
+      "ttl_ms": null,
+      "withheld": null
+     }
+    ]
+   }
+  }
+ }
+]

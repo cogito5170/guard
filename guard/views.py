@@ -44,11 +44,12 @@ class DCView:
     stale_keys: tuple = ()            # 결정 문맥 안에서 낡았던 키
     default_decision: tuple = ()      # 목적의 안전 기본 결정 후보(DC `Purpose.default_decision`, BD-23 · BD-76)
     default_action: "str | None" = None   # DC 가 고른 기본 행동(능력 있는 첫 후보, DC `core.default_action`)
+    missing_required: tuple = ()      # 쓸 수 없던 필수 키(DC 투영 `missing_required`). 까닭 글에만 -- 판정은 complete 로
 
     @classmethod
     def from_dict(cls, d: dict) -> "DCView":
         kw = _closed(cls, d, "DCView")
-        for k in ("stale_keys", "default_decision"):
+        for k in ("stale_keys", "default_decision", "missing_required"):
             if k in kw:
                 kw[k] = tuple(kw[k])
         v = cls(**kw)

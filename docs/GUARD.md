@@ -109,3 +109,49 @@ ARBITRATE 는 짓지 않았다. 지금 후보는 하나뿐이고, BD-24 는 "옮
     - **A8 열쇠의 rationale**: 대조 제안의 까닭 글이 하나뿐이다.
     - **없는 속성 · 걸린 속성**: 예시에 그런 사전조건이 없다.
   - 이 길들은 단위 시험이 잡는다.
+
+## 7. DC 결정 문맥 → DCView (CMD-G2, `guard/dc_adapter.py`)
+
+`dcview_from_dc(record, purpose, *, offers=None, seen=None) -> DCView`.
+DC 코드는 import 하지 않는다. DC 가 내는 **데이터**만 읽는다.
+
+| 입력 | 꼴 | 맞춰 보는 것 |
+|---|---|---|
+| `record` | DC `ctx.to_dict()` = `{digest, core, provenance}` | digest 를 다시 계산한다(DC `snapshot.digest_of` 와 같은 바이트열). 고친 기록은 거절한다 |
+| 〃 | 또는 `core_dict()` = `{id, …core}` | 맞춰 볼 digest 가 없다. id 를 그대로 믿는다 |
+| `purpose` | DC `Purpose` 의 `dataclasses.asdict` | 이름 · 판본이 core 와 같아야 한다(DC `spec_of` 와 같다). 모르는 칸은 거절한다 |
+| `offers` · `seen` | 런타임이 넘긴다 | 겨냥 있는 행동과 결정이 본 실체의 판은 DC 에 없다(F4 에서 MS 가 넘긴다) |
+
+| DCView 칸 | 어디서 |
+|---|---|
+| `dc_id` | `"dc-" + digest[:16]` |
+| `complete` · `missing_required` | 필수 키(목적 refs 의 `required`, 기본값 참) 가운데 OBSERVED · DERIVED · INFERRED 가 아니고 NOT_APPLICABLE 도 아닌 것. DC `project.validity` 와 같은 식이다. 키 `역할[꼬리].이름` 은 역할로 맞춘다. 필수 키가 core 에 아예 없어도 빠진 것으로 센다(닫는 쪽) |
+| `stale_keys` | core 상태 가운데 STALE 인 키 + 질의 행 속성 가운데 STALE 인 것 `"<질의>/<행>.<속성>"` |
+| `default_decision` | 목적의 후보(순서 그대로) |
+| `default_action` | core 의 값(DC 가 능력으로 고른 것). 후보 밖이면 거절한다 |
+| `offers` | core 의 가능 행동 → `{행동: [None]}`(목적 단위 행동, 겨냥 없음) + 런타임의 `offers` |
+
+맞지 않는 것은 모두 `ViewError` 다. 부르는 쪽(F4)은 그것을 DENY(E)로 다룬다.
+
+### 지시와 다른 점 · 가정
+
+- **G2-D1** 지시는 "core 에 `complete` · `missing_required` · `default_decision` 이 있다" 고 했다. **실제 DC core 에는 없다**.
+  - `complete` · `missing_required` 는 core 의 유효성과 목적 명세의 필수 여부로 계산하는 **투영**이다(`dc/project.py`).
+  - `default_decision` 은 목적 명세(`dc/purpose.py`)에 있다. core 에 있는 것은 `default_action` 뿐이다.
+  - 그래서 어댑터는 목적 명세의 **데이터**를 함께 받는다. DC 의 MSStateReader 가 MS 에 넘기는 `record.complete` 를 받는 길도 있었다. 그러나 그것은 DC 가 계산한 결과를 믿는 것이고 고친 기록을 가를 수 없다. Guard 는 원 데이터에서 다시 계산한다.
+- **G2-D2** `core_dict()` 만 받으면 변조를 가를 수 없다. digest 가 core + provenance 의 해시라서다. 받기는 하되 문서에 적는다. F4 에서는 `to_dict()` 를 넘기기를 권한다.
+- **G2-D3** `DCView.missing_required` 칸을 더했다. 까닭 글에만 쓰고, 판정은 `complete` 로 한다. 입력 꼴이고 동결된 계약(`guard-result/1`)은 바뀌지 않았다.
+- **assumption** `stale_keys` 에는 STALE 을 모두 넣는다. 필수가 아닌 키와 질의가 `allow_stale` 로 선언한 값도 들어간다. 그래서 D 는 그런 문맥에서도 위험 행동을 막는다(G1 의 D 정의 그대로 — "낡은 키가 있으면"). 위험 행동을 의도가 쓴 키(`used_keys`)로 좁히는 것은 따로 정할 일이다.
+
+### 시험
+
+- `eval/dc_fixtures.py` 가 DC 의 **실제 빌더**(통합 머리 `ce3a0bc`)로 여덟 문맥을 지어 `tests/fixtures/dc_contexts.json` 에 둔다.
+  - 여덟 문맥: 완전 · 불완전(기본 ESCALATE / STOP) · 필수 아닌 키 낡음 · 필수 키 낡음 · 기본 결정 없음 · 질의 행 속성 낡음.
+  - 사례마다 DC 가 **스스로** 계산한 투영(`ctx.validity` · STALE · `default_action`)을 정답으로 함께 저장한다.
+- `tests/test_dc_adapter.py`:
+  - 어댑터 출력이 DC 투영과 같다(8/8). `core_dict` 로 넣어도 같은 DCView 가 나온다.
+  - 고친 기록 · 목적 판본 다름 · 꼴 다름은 거절한다.
+  - D 가 그 위에서 선다:
+    - 위험 행동 reboot: 완전 → ALLOW · 불완전 · 낡음 → SAFE_ACTION(DC 의 기본 행동) · 기본 없음 → DENY
+    - local 행동은 어디서나 ALLOW 다. 안전 기본 후보(ESCALATE)는 막지 않는다.
+  - DC 가 옆에 있으면 고정 파일이 지금 DC 가 짓는 것과 같은지 본다(드리프트).

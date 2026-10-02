@@ -127,7 +127,7 @@ def _guard(it: ActionIntent, dc: DCView, state: StateView, model: GuardModel, mo
 
     # D -- 결정 문맥이 불완전 · 낡았는데 위험 등급 행동. 목적의 안전 기본 후보는 막지 않는다(DATA_FLOW §6.1)
     if spec.risk in model.risky and it.action not in dc.default_decision and (not dc.complete or dc.stale_keys):
-        why = ([] if dc.complete else ["DC 가 불완전하다(필수 상태를 쓸 수 없다)"]) + (
+        why = ([] if dc.complete else [f"DC 가 불완전하다(쓸 수 없는 필수 상태 {sorted(dc.missing_required)})"]) + (
             [f"DC 안에 낡은 키 {sorted(dc.stale_keys)}"] if dc.stale_keys else [])
         fails["D"] = [f"{it.action}({spec.risk}): " + " · ".join(why)]
 

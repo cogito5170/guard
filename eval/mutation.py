@@ -15,10 +15,11 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+from eval.dc_fixtures import find_dc  # noqa: E402
 from eval.ms_contrast import find_ms  # noqa: E402
 
-R, F, V, P, A, C = ("guard/rules.py", "guard/forms.py", "guard/views.py", "guard/predicate.py", "guard/params.py",
-                    "guard/command.py")
+R, F, V, P, A, C, D = ("guard/rules.py", "guard/forms.py", "guard/views.py", "guard/predicate.py", "guard/params.py",
+                       "guard/command.py", "guard/dc_adapter.py")
 OQ17 = 'raise ValueError(f"mode={mode!r}: OQ-17(안전 동작 전순서) 전에는 shadow 만 켠다")'
 # (이름, 파일, 바꿀 글, 바꿀 것). ★ = "ALLOW 를 더하는" 변이(닫는 쪽으로만을 깨는 것)
 MUTANTS = [
@@ -88,11 +89,27 @@ MUTANTS = [
     ("SAFE_ACTION 이 겨냥을 물려받음", C, '"target": None, "args": {}}', '"target": intent.target, "args": {}}'),
     ("★ DENY 에도 명령 재료", C, '    raise ValueError(f"{result.verdict} 에는 명령이 없다")',
      '    return {"intent_id": intent.id, "action": intent.action, "target": intent.target, "args": dict(intent.args)}'),
+    ("DC digest 를 맞춰 보지 않음", D, 'if not isinstance(record["digest"], str) or _digest(body) != record["digest"]:', "if False:"),
+    ("DC 목적 판본을 보지 않음", D, 'if (purpose["name"], purpose["version"]) != (core["purpose"], core["purpose_version"]):',
+     "if False:"),
+    ("DC core 칸을 보지 않음", D, "if not isinstance(core, dict) or set(core) != CORE_KEYS:", "if not isinstance(core, dict):"),
+    ("NOT_APPLICABLE 을 빠진 것으로", D, " and st != NOT_APPLICABLE]", "]"),
+    ("필수 여부를 보지 않음", D, "if _role_name(k) in required and st", "if st"),
+    ("필수 기본값을 거짓으로", D, 'if r.get("required", True):', 'if r.get("required", False):'),
+    ("꼬리 있는 키의 역할", D, 'return head.split("[", 1)[0], name', "return head, name"),
+    ("core 에 없는 필수 키를 넘김", D, '    missing += [f"{r}.{n}" for r, n in sorted(required - present)]\n', ""),
+    ("낡은 상태 키를 보지 않음", D, "stale = [k for k, (_, st) in states.items() if st == STALE]", "stale = []"),
+    ("낡은 질의 속성을 보지 않음", D, 'stale += [f"{qname}/{row[\'id\']}.{p}" for p, (_, st) in sorted(row["props"].items()) if st == STALE]',
+     "pass"),
+    ("기본 행동을 목적의 첫 후보로", D, 'default_action=core["default_action"]',
+     'default_action=(purpose.get("default_decision") or [None])[0]'),
+    ("목적 행동을 내놓지 않음", D, "offered = {a: [None] for a in acts}", "offered = {}"),
+    ("DCView 검사 생략", D, "    view.check()\n", ""),
     ("Guard 가 MS 를 import", R, "from . import predicate\n", "from . import predicate\nif False:\n    import ms  # noqa\n"),
 ]
 
-UNIT = ["tests.test_boundary", "tests.test_command", "tests.test_forms", "tests.test_guard", "tests.test_predicate",
-        "tests.test_validate", "tests.test_views"]
+UNIT = ["tests.test_boundary", "tests.test_command", "tests.test_dc_adapter", "tests.test_forms", "tests.test_guard",
+        "tests.test_predicate", "tests.test_validate", "tests.test_views"]
 
 
 def run(tree: pathlib.Path, mods, env) -> bool:
@@ -108,6 +125,8 @@ def main() -> int:
         print("MS 를 찾지 못했다(MS_REPO) -- 대조 시험 없이는 변이를 돌리지 않는다")
         return 2
     env = {**os.environ, "MS_REPO": str(msroot)}
+    if find_dc() is not None:                    # 있으면 DC 드리프트 시험도 돈다
+        env["DC_REPO"] = str(find_dc())
     for k in ("ACTION_REPO",):
         if k not in env:
             for p in (ROOT.parent / "action", ROOT.parent / "cogito5170" / "action"):
