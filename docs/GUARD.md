@@ -18,7 +18,7 @@ evaluate(intent, dc, state, model)
   │                               A2 결정이 본 실체인가     A3 그 행동의 대상인가     A4 인자가 ActionSpec 과 맞나
   │     └─ 막히면 → GuardResult(DENY, rule = 그 규칙)   GUARD 는 돌지 않는다
   └─ guard(intent, dc, state, model)   걸린 규칙을 모두 본다(논리곱)
-        D  DC 가 불완전하거나 낡은 키가 있는데 위험 등급 행동(목적의 안전 기본 후보는 빼고)
+        D  DC 가 불완전하거나, 필수 키 · 의도가 쓴 키 가운데 낡은 것이 있는데 위험 등급 행동(목적의 안전 기본 후보는 빼고, BD-103)
         A5 결정이 본 판 ≠ 지금 판 · 지금 상태에 없음
         A6 사전조건이 보는 속성이 지금 없거나 낡음 · 지금 거짓 · 대상 모형이 다름
         A7 external · irreversible 인데 허가 없음
@@ -141,7 +141,7 @@ DC 코드는 import 하지 않는다. DC 가 내는 **데이터**만 읽는다.
   - 그래서 어댑터는 목적 명세의 **데이터**를 함께 받는다. DC 의 MSStateReader 가 MS 에 넘기는 `record.complete` 를 받는 길도 있었다. 그러나 그것은 DC 가 계산한 결과를 믿는 것이고 고친 기록을 가를 수 없다. Guard 는 원 데이터에서 다시 계산한다.
 - **G2-D2** `core_dict()` 만 받으면 변조를 가를 수 없다. digest 가 core + provenance 의 해시라서다. 받기는 하되 문서에 적는다. F4 에서는 `to_dict()` 를 넘기기를 권한다.
 - **G2-D3** `DCView.missing_required` 칸을 더했다. 까닭 글에만 쓰고, 판정은 `complete` 로 한다. 입력 꼴이고 동결된 계약(`guard-result/1`)은 바뀌지 않았다.
-- **assumption** `stale_keys` 에는 STALE 을 모두 넣는다. 필수가 아닌 키와 질의가 `allow_stale` 로 선언한 값도 들어간다. 그래서 D 는 그런 문맥에서도 위험 행동을 막는다(G1 의 D 정의 그대로 — "낡은 키가 있으면"). 위험 행동을 의도가 쓴 키(`used_keys`)로 좁히는 것은 따로 정할 일이다.
+- `stale_keys` 에는 STALE 을 모두 싣는다. D 가 그 가운데 무엇을 보는지는 §8(BD-103)이 정한다.
 
 ### 시험
 
@@ -152,7 +152,30 @@ DC 코드는 import 하지 않는다. DC 가 내는 **데이터**만 읽는다.
   - 어댑터 출력이 DC 투영과 같다(8/8). `core_dict` 로 넣어도 같은 DCView 가 나온다.
   - 고친 기록 · 목적 판본 다름 · 꼴 다름은 거절한다.
   - D 가 그 위에서 선다:
-    - 위험 행동 reboot: 완전 → ALLOW · 불완전 · 낡음 → SAFE_ACTION(DC 의 기본 행동) · 기본 없음 → DENY
+    - 위험 행동 reboot: 완전 → ALLOW · 불완전 → SAFE_ACTION(DC 의 기본 행동) · 기본 없음 → DENY · 낡은 키는 §8
     - local 행동은 어디서나 ALLOW 다. 안전 기본 후보(ESCALATE)는 막지 않는다.
   - DC 가 옆에 있으면 고정 파일이 지금 DC 가 짓는 것과 같은지 본다(드리프트).
 - 변이(`eval/mutation.py`): G1 의 58 개 + 어댑터 13 개 = **71/71 RED**.
+
+## 8. D 의 낡은 키 범위 (CMD-G3, BD-103)
+
+D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`) 다(`rules.stale_in_scope`).
+- `used_keys` 의 `query:<이름>` 은 그 질의의 행 속성 전부(`"<이름>/<행>.<속성>"`)다. 이름은 통째로 맞춘다(`query:ho` 는 `hot/…` 이 아니다).
+- 필수 키는 `DCView.required_keys` 다. 어댑터가 목적 refs 의 `required` 로 채우고, DC 자신의 `StateView.required` 와 같음을 시험이 본다.
+  - DC 문맥에서 필수 키가 STALE 이면 이미 `complete=False` 다. 그래도 D 는 두 길을 따로 본다. 손으로 지은 문맥(complete=True, 필수 키 STALE)도 막기 위해서다.
+- 까닭: 결정이 쓰지도 않고 필수도 아닌 키가 낡은 것은 그 행동의 근거가 아니다. 문맥 전체를 보면 완전한 문맥에서도 위험 행동이 SAFE_ACTION 으로 바뀌었다(G2 표의 `exec_stale_optional` · `cr_query_stale`).
+- `allow_stale` 로 일부러 보인 값이라도 의도가 썼으면 D 를 건다(엄한 쪽).
+
+판정표 — 위험 행동 `reboot`, DC 실제 빌더 문맥:
+
+| 문맥 | 의도의 used_keys | Guard |
+|---|---|---|
+| exec_complete | — | ALLOW |
+| exec_incomplete_escalate · _stop | — | SAFE_ACTION → ESCALATE · STOP (불완전) |
+| exec_stale_optional (`tool[Bash].tool_execution_health` 낡음, 필수 아님) | — | **ALLOW** (G2: SAFE_ACTION) |
+| 〃 | `tool[Bash].tool_execution_health` | SAFE_ACTION → ESCALATE |
+| exec_stale_required (`runtime.rate_limit_state` 낡음, 필수) | — | SAFE_ACTION → ESCALATE (불완전 · 필수 키 낡음) |
+| exec_no_default | — | DENY (D) |
+| cr_complete | — | ALLOW |
+| cr_query_stale (`hot/srv07.fan_rpm` 낡음) | — · `query:cold` · `session.context_pressure` | **ALLOW** (G2: SAFE_ACTION) |
+| 〃 | `query:hot` 또는 `hot/srv07.fan_rpm` | SAFE_ACTION → KEEP |

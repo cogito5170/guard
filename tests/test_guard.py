@@ -99,9 +99,24 @@ class IncompleteDC(unittest.TestCase):
         r = g(self.reboot(), d=dc(complete=False))
         self.assertEqual((r.verdict, r.rule, r.safe_action), (SAFE_ACTION, "D", "escalate"))
 
-    def test_stale_key_risky_gets_safe_action(self):
-        r = g(intent("open_ticket", "srv1", {"note": "팬"}), d=dc(stale_keys=("fan",)))
+    def test_stale_key_scope_is_required_or_used(self):
+        """BD-103: 낡은 키 가운데 필수 키 ∪ 의도가 쓴 키만 본다."""
+        ticket = lambda used: intent("open_ticket", "srv1", {"note": "팬"}, used_keys=used)  # noqa: E731
+        self.assertEqual(g(ticket(("status",)), d=dc(stale_keys=("fan",))).verdict, ALLOW)          # 안 쓴 · 필수 아님
+        r = g(ticket(("status", "fan")), d=dc(stale_keys=("fan",)))                                  # 썼다
         self.assertEqual((r.verdict, r.rule), (SAFE_ACTION, "D"))
+        self.assertIn("fan", r.reasons[0])
+        r = g(ticket(("status",)), d=dc(stale_keys=("fan",), required_keys=("fan",)))                # 필수다
+        self.assertEqual((r.verdict, r.rule), (SAFE_ACTION, "D"))
+
+    def test_query_scope(self):
+        """`query:<이름>` 은 그 질의의 행 속성 전부(`"<이름>/<행>.<속성>"`)."""
+        d = dc(stale_keys=("hot/srv1.fan_rpm",))
+        boot = lambda used: intent("reboot", "srv1", {}, used_keys=used)  # noqa: E731
+        self.assertEqual(g(boot(("query:hot",)), d=d).verdict, SAFE_ACTION)
+        self.assertEqual(g(boot(("hot/srv1.fan_rpm",)), d=d).verdict, SAFE_ACTION)       # 속성 하나를 콕 집어 써도
+        for used in (("query:cold",), ("query:ho",), ("hot",), ("status",)):
+            self.assertEqual(g(boot(used), d=d).verdict, ALLOW, used)
 
     def test_no_default_action_is_deny(self):
         r = g(self.reboot(), d=dc(complete=False, default_action=None))
@@ -148,7 +163,8 @@ class ClosesOnly(unittest.TestCase):
     def tighten(self, d, s, m):
         yield d, s, dataclasses.replace(m, grants=frozenset())
         yield dataclasses.replace(d, complete=False), s, m
-        yield dataclasses.replace(d, stale_keys=d.stale_keys + ("k",)), s, m
+        yield dataclasses.replace(d, stale_keys=d.stale_keys + ("status",)), s, m                 # 의도가 쓴 키가 낡음
+        yield dataclasses.replace(d, stale_keys=d.stale_keys + ("fan",), required_keys=("fan",)), s, m   # 필수 키가 낡음
         yield dataclasses.replace(d, offers={k: [] for k in d.offers}), s, m
         yield dataclasses.replace(d, seen={}), s, m
         stale = {k: Entity(e.model, e.version, {p: Prop(v.value, True, v.age) for p, v in e.props.items()})
@@ -170,7 +186,7 @@ class ClosesOnly(unittest.TestCase):
                     self.assertNotEqual(r.verdict, ALLOW, (it.action, it.target, r0.rule, r.reasons))
                 if r.verdict == SAFE_ACTION:
                     self.assertIn(r.safe_action, d2.default_decision)
-        self.assertGreater(n, 2000)
+        self.assertGreater(n, 2500)
 
     def test_validation_failure_is_never_allowed(self):
         for it, d, s, m in self.cases():

@@ -5,7 +5,7 @@
 - 되풀이(A8)의 기억은 Guard 안에 두지 않는다. 호출자가 ALLOW 뒤 `repeat_key` 를 StateView.allowed 에 더한다.
 - GUARD 는 걸린 규칙을 **모두** 본다(제약은 논리곱, DATA_FLOW §6.4). `rule` 은 MS 와 같은 순서에서 처음 걸린 것이고,
   `reasons` 에 걸린 것 전부가 있다. MS 는 처음 걸린 것에서 멈춘다.
-- D(새): DC 가 불완전하거나 낡은 키가 있으면 위험 등급 행동을 막는다(DATA_FLOW §6.5). 목적의 기본 행동이 있으면
+- D(새): DC 가 불완전하거나, 필수 키 · 의도가 쓴 키 가운데 낡은 것이 있으면 위험 등급 행동을 막는다(DATA_FLOW §6.5 · BD-103). 목적의 기본 행동이 있으면
   SAFE_ACTION 으로 갈아 끼우고, 없으면 DENY 다.
 
 닫는 쪽으로만: `evaluate` 는 VALIDATE 가 막은 의도를 GUARD 로 넘기지 않는다. GUARD 가 ALLOW 를 내는 길은 걸린 규칙이
@@ -105,6 +105,16 @@ def _validate(intent, dc: DCView, model: GuardModel):
     return PASS, [f"{it.action} -> {it.target}"]
 
 
+def stale_in_scope(it: ActionIntent, dc: DCView) -> list:
+    """D 가 보는 낡은 키(BD-103): 필수 키 ∪ 의도가 쓴 키. `query:<이름>` 은 그 질의의 행 속성 전부(`"<이름>/…"`).
+    결정이 쓰지도 않고 필수도 아닌 키가 낡은 것은 그 행동의 근거가 아니다. `allow_stale` 로 보인 값이라도 의도가 썼으면 건다."""
+    used = set(it.used_keys)
+    queries = {k[len("query:"):] for k in used if k.startswith("query:")}
+    req = set(dc.required_keys)
+    return sorted(k for k in dc.stale_keys
+                  if k in req or k in used or ("/" in k and k.split("/", 1)[0] in queries))
+
+
 # ── GUARD ──────────────────────────────────────────────────────────────────
 
 def guard(intent: ActionIntent, dc: DCView, state: StateView, model: GuardModel, mode: str = SHADOW) -> GuardResult:
@@ -126,9 +136,10 @@ def _guard(it: ActionIntent, dc: DCView, state: StateView, model: GuardModel, mo
     refs: list = []
 
     # D -- 결정 문맥이 불완전 · 낡았는데 위험 등급 행동. 목적의 안전 기본 후보는 막지 않는다(DATA_FLOW §6.1)
-    if spec.risk in model.risky and it.action not in dc.default_decision and (not dc.complete or dc.stale_keys):
+    stale = stale_in_scope(it, dc)
+    if spec.risk in model.risky and it.action not in dc.default_decision and (not dc.complete or stale):
         why = ([] if dc.complete else [f"DC 가 불완전하다(쓸 수 없는 필수 상태 {sorted(dc.missing_required)})"]) + (
-            [f"DC 안에 낡은 키 {sorted(dc.stale_keys)}"] if dc.stale_keys else [])
+            [f"필수 · 의도가 쓴 키 가운데 낡은 것 {stale}"] if stale else [])
         fails["D"] = [f"{it.action}({spec.risk}): " + " · ".join(why)]
 
     node = state.entities.get(it.target) if it.target is not None else None

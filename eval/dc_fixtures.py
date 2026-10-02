@@ -7,7 +7,7 @@ Guard 패키지는 DC 를 import 하지 않는다. 이 파일만 DC 를 읽기 �
 DecisionContextBuilder · PURPOSES). 사례마다 저장하는 것:
     record          DC `ctx.to_dict()` -- 어댑터의 입력
     purpose         DC 목적 명세의 `dataclasses.asdict` -- 어댑터의 입력
-    dc_projection   DC 가 **스스로** 계산한 투영(`ctx.validity` · 상태 view 의 STALE · core.default_action) -- 어댑터 출력과 맞대는 정답
+    dc_projection   DC 가 **스스로** 계산한 투영(`ctx.validity` · 상태 view 의 STALE · required · core.default_action) -- 어댑터 출력과 맞대는 정답
 """
 from __future__ import annotations
 
@@ -146,6 +146,7 @@ def cases(dc):
                         if st == "STALE"])
         rows.append({"name": name, "record": ctx.to_dict(), "purpose": json.loads(json.dumps(dataclasses.asdict(purpose))),
                      "dc_projection": {"id": ctx.id, "complete": v.complete, "missing_required": sorted(v.missing_required),
+                                       "required_keys": sorted(s.key for s in ctx.states if s.required),
                                        "stale_keys": stale, "default_action": ctx.default_action,
                                        "default_decision": list(purpose.default_decision),
                                        "actions": list(ctx.core.actions)}})

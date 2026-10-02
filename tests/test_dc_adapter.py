@@ -54,6 +54,7 @@ class FromRealBuilder(unittest.TestCase):
             self.assertEqual(list(v.stale_keys), p["stale_keys"], name)
             self.assertEqual(v.default_action, p["default_action"], name)
             self.assertEqual(list(v.default_decision), p["default_decision"], name)
+            self.assertEqual(list(v.required_keys), p["required_keys"], name)
             self.assertEqual(v.offers, {a: [None] for a in p["actions"]}, name)
             self.assertEqual(v.seen, {}, name)
 
@@ -133,11 +134,11 @@ class DStandsOnRealContexts(unittest.TestCase):
         "exec_complete": (ALLOW, "0", None),
         "exec_incomplete_escalate": (SAFE_ACTION, "D", "ESCALATE"),
         "exec_incomplete_stop": (SAFE_ACTION, "D", "STOP"),
-        "exec_stale_optional": (SAFE_ACTION, "D", "ESCALATE"),
+        "exec_stale_optional": (ALLOW, "0", None),               # 낡은 키는 필수가 아니고 의도가 안 썼다(BD-103)
         "exec_stale_required": (SAFE_ACTION, "D", "ESCALATE"),
         "exec_no_default": (DENY, "D", None),
         "cr_complete": (ALLOW, "0", None),
-        "cr_query_stale": (SAFE_ACTION, "D", "KEEP"),
+        "cr_query_stale": (ALLOW, "0", None),                    # 질의 hot 을 의도가 안 썼다
     }
 
     def test_risky_action(self):
@@ -149,6 +150,20 @@ class DStandsOnRealContexts(unittest.TestCase):
             if r.verdict == SAFE_ACTION:
                 self.assertIn(r.safe_action, v.default_decision)
                 self.assertIn(r.safe_action, v.offers)            # DC 가 능력으로 고른 것 = 가능한 행동
+
+    def test_used_stale_keys_trigger_D(self):
+        """BD-103 판정표의 둘째 반: 의도가 낡은 키를 썼으면 SAFE_ACTION."""
+        for name, used, want in [("exec_stale_optional", ("tool[Bash].tool_execution_health",), "ESCALATE"),
+                                 ("cr_query_stale", ("query:hot",), "KEEP"),
+                                 ("cr_query_stale", ("hot/srv07.fan_rpm",), "KEEP")]:
+            v = view(name, offers=OFFERS, seen=SEEN)
+            it = ActionIntent(v.dc_id, "ms-cr@cr-3", "reboot", "srv1", {}, "시험", used, "llm")
+            _, r = evaluate(it, v, STATE, MODEL)
+            self.assertEqual((r.verdict, r.rule, r.safe_action), (SAFE_ACTION, "D", want), (name, used))
+        v = view("cr_query_stale", offers=OFFERS, seen=SEEN)                 # 다른 질의 · 신선한 키를 쓴 것은 걸지 않는다
+        for used in (("query:cold",), ("session.context_pressure",)):
+            it = ActionIntent(v.dc_id, "ms-cr@cr-3", "reboot", "srv1", {}, "시험", used, "llm")
+            self.assertEqual(evaluate(it, v, STATE, MODEL)[1].verdict, ALLOW, used)
 
     def test_reasons_name_the_missing_keys(self):
         v = view("exec_incomplete_escalate", offers=OFFERS, seen=SEEN)

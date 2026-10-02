@@ -15,6 +15,12 @@
    ],
    "id": "dc-530da5ffd5eb6f3c",
    "missing_required": [],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
+    "task.progress_state"
+   ],
    "stale_keys": []
   },
   "name": "exec_complete",
@@ -456,6 +462,12 @@
    "missing_required": [
     "task.progress_state"
    ],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
+    "task.progress_state"
+   ],
    "stale_keys": []
   },
   "name": "exec_incomplete_escalate",
@@ -891,6 +903,12 @@
    ],
    "id": "dc-078c54dcd06b9fb0",
    "missing_required": [
+    "task.progress_state"
+   ],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
     "task.progress_state"
    ],
    "stale_keys": []
@@ -1332,6 +1350,12 @@
    ],
    "id": "dc-705c6414336dc47c",
    "missing_required": [],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
+    "task.progress_state"
+   ],
    "stale_keys": [
     "tool[Bash].tool_execution_health"
    ]
@@ -1780,6 +1804,12 @@
    "missing_required": [
     "runtime.rate_limit_state"
    ],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
+    "task.progress_state"
+   ],
    "stale_keys": [
     "runtime.rate_limit_state"
    ]
@@ -2225,6 +2255,12 @@
    "missing_required": [
     "task.progress_state"
    ],
+   "required_keys": [
+    "agent.execution_health",
+    "runtime.rate_limit_state",
+    "task.completion_state",
+    "task.progress_state"
+   ],
    "stale_keys": []
   },
   "name": "exec_no_default",
@@ -2658,6 +2694,15 @@
    ],
    "id": "dc-a67a0bc46fa050f0",
    "missing_required": [],
+   "required_keys": [
+    "session.answer_reliability",
+    "session.context_pressure",
+    "session.correction_rate",
+    "session.latency_pressure",
+    "session.retry_pressure",
+    "session.task_complexity",
+    "session.token_budget_pressure"
+   ],
    "stale_keys": []
   },
   "name": "cr_complete",
@@ -3070,6 +3115,15 @@
    ],
    "id": "dc-c18c5bd6ca1dc327",
    "missing_required": [],
+   "required_keys": [
+    "session.answer_reliability",
+    "session.context_pressure",
+    "session.correction_rate",
+    "session.latency_pressure",
+    "session.retry_pressure",
+    "session.task_complexity",
+    "session.token_budget_pressure"
+   ],
    "stale_keys": [
     "hot/srv07.fan_rpm"
    ]

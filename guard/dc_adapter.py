@@ -13,6 +13,7 @@ Guard 는 DC 코드를 import 하지 않는다. DC 가 내는 **데이터**만 �
 - `complete`          필수 키 가운데 쓸 수 없고(OBSERVED · DERIVED · INFERRED 가 아님) NOT_APPLICABLE 도 아닌 것이 없다
 - `missing_required`  그 키들. 목적이 필수로 부른 키가 core 에 아예 없으면 그것도 넣는다(닫는 쪽)
 - `stale_keys`        core 상태 가운데 STALE 인 키 + 질의 행 속성 가운데 STALE 인 것(`"<질의>/<행>.<속성>"`)
+- `required_keys`     core 상태 가운데 목적이 필수로 부른 키. D 는 낡은 키 가운데 필수 ∪ 의도의 used_keys 만 본다(BD-103)
 - `default_decision`  목적의 후보(순서 그대로) · `default_action` core 의 값(DC 가 능력으로 고른 것)
 - `offers`            core 의 가능 행동은 목적 단위라 겨냥이 없다 → `{행동: [None]}`. 겨냥 있는 행동(MS 도구 등)과 결정이 본 실체의 판은
                       DC 에 없다 -- 런타임이 `offers` · `seen` 으로 넘긴다(F4)
@@ -107,6 +108,7 @@ def dcview_from_dc(record: dict, purpose: dict, *, offers: "dict | None" = None,
 
     view = DCView(dc_id=dc_id, offers=offered, seen=dict(seen or {}), complete=not missing,
                   stale_keys=tuple(sorted(stale)), default_decision=tuple(purpose.get("default_decision", ())),
-                  default_action=core["default_action"], missing_required=tuple(sorted(missing)))
+                  default_action=core["default_action"], missing_required=tuple(sorted(missing)),
+                  required_keys=tuple(sorted({k for k in states if _role_name(k) in required})))
     view.check()
     return view
