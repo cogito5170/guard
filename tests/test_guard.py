@@ -6,6 +6,12 @@ from guard import ALLOW, DENY, SAFE_ACTION, Entity, Prop, StateView, evaluate, g
 from tests.fixture import dc, intent, model, state
 
 
+def _same(r):
+    """모드 말고 전부(id 는 mode 칸이 들어가므로 다르다)."""
+    d = r.to_dict()
+    return {k: v for k, v in d.items() if k not in ("mode", "guard_id")}
+
+
 def g(it=None, d=None, s=None, m=None):
     return guard(it or intent(), d or dc(), s or state(), m or model())
 
@@ -79,11 +85,25 @@ class GuardRules(unittest.TestCase):
         r = guard("의도 아님", dc(), state(), model())
         self.assertEqual((r.verdict, r.rule), (DENY, "E"))
 
-    def test_enforce_is_refused(self):
-        with self.assertRaises(ValueError):
-            guard(intent(), dc(), state(), model(), mode="enforce")
-        with self.assertRaises(ValueError):
-            evaluate(intent(), dc(), state(), model(), mode="enforce")
+    def test_enforce_is_accepted_and_only_the_mode_differs(self):
+        """CMD-G6 · BD-114: enforce 를 받는다. 판정은 모드와 무관하다 -- mode 칸만 다르다."""
+        for it, d in [(intent(), dc()), (intent(target="srv3"), dc()), (intent("reboot", "srv1", {}), dc(complete=False))]:
+            s, e = guard(it, d, state(), model()), guard(it, d, state(), model(), mode="enforce")
+            self.assertEqual((s.mode, e.mode), ("shadow", "enforce"))
+            self.assertEqual(_same(s), _same(e))
+
+    def test_exception_is_deny_in_both_modes(self):
+        for mode in ("shadow", "enforce"):
+            r = guard(intent(), dc(), None, model(), mode=mode)
+            self.assertEqual((r.verdict, r.rule, r.mode), (DENY, "E", mode))
+            self.assertEqual(evaluate(intent(), None, state(), model(), mode=mode)[1].rule, "E")
+
+    def test_unknown_mode_is_refused(self):
+        for mode in ("loud", "Enforce", None, ""):
+            with self.assertRaises(ValueError, msg=mode):
+                guard(intent(), dc(), state(), model(), mode=mode)
+            with self.assertRaises(ValueError, msg=mode):
+                evaluate(intent(), dc(), state(), model(), mode=mode)
 
     def test_pure(self):
         a, b = g(), g()
@@ -196,6 +216,19 @@ class ClosesOnly(unittest.TestCase):
                 if r.verdict == SAFE_ACTION:
                     self.assertIn(r.safe_action, d2.default_decision)
         self.assertGreater(n, 2500)
+
+    def test_shadow_and_enforce_agree_everywhere(self):
+        """끝난 기준 1(전수): 닫힘 성질의 모든 경우와 그 조인 것에서 두 모드의 판정이 같다."""
+        n = 0
+        for it, d, s, m in self.cases():
+            for d2, s2, m2 in [(d, s, m), *self.tighten(d, s, m)]:
+                vs, rs = evaluate(it, d2, s2, m2)
+                ve, re_ = evaluate(it, d2, s2, m2, mode="enforce")
+                self.assertEqual(vs, ve)                       # VALIDATE 에는 모드가 없다
+                self.assertEqual((rs.mode, re_.mode), ("shadow", "enforce"))
+                self.assertEqual(_same(rs), _same(re_), (it.action, it.target, rs.rule))
+                n += 1
+        self.assertGreater(n, 3000)
 
     def test_validation_failure_is_never_allowed(self):
         for it, d, s, m in self.cases():

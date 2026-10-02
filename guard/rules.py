@@ -11,8 +11,9 @@
 닫는 쪽으로만: `evaluate` 는 VALIDATE 가 막은 의도를 GUARD 로 넘기지 않는다. GUARD 가 ALLOW 를 내는 길은 걸린 규칙이
 하나도 없을 때 하나뿐이다. 예외는 DENY(rule E)다.
 
-모드: 판정은 모드와 무관하다. shadow 는 판정을 기록만 하고 런타임이 하던 대로 진행한다. enforce 는 OQ-17(안전 동작의
-전순서 값)이 정해지기 전에는 켜지 않는다 -- `guard(..., mode="enforce")` 는 거절한다.
+모드(shadow · enforce, CMD-G6 · BD-114): **판정은 모드와 무관하다.** 같은 입력이면 verdict · rule · reasons 가 같고 `mode`
+칸만 다르다. 모드는 런타임이 그 판정을 따르는지(enforce) 기록만 하는지(shadow)를 뜻할 뿐이다. 예외는 두 모드 모두 DENY(E).
+안전 동작의 전순서(BD-106)는 넣지 않았다 -- BD-114 로 D 는 거절만 하므로 그 값을 읽는 곳이 없다.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ from action.canonical import digest
 from action.forms import ActionIntent, ContractError
 from action.params import check_args
 
-from .forms import ALLOW, DENY, PASS, SAFE_ACTION, SHADOW, GuardResult, ValidationResult
+from .forms import ALLOW, DENY, MODES, PASS, SAFE_ACTION, SHADOW, GuardResult, ValidationResult
 from .views import DCView, GuardModel, StateView
 
 GRANT_RISKS = ("external", "irreversible")          # A7: 허가가 있어야 하는 위험 등급(MS 와 같다)
@@ -115,12 +116,17 @@ def stale_in_scope(it: ActionIntent, dc: DCView) -> list:
                   if k in req or k in used or ("/" in k and k.split("/", 1)[0] in queries))
 
 
+def _check_mode(mode):
+    """모드는 shadow · enforce 둘뿐이다. 모르는 모드는 설정 오류라 판정 전에 거절한다(판정으로 덮지 않는다)."""
+    if mode not in MODES:
+        raise ValueError(f"mode={mode!r}: {MODES} 가운데 하나여야 한다")
+
+
 # ── GUARD ──────────────────────────────────────────────────────────────────
 
 def guard(intent: ActionIntent, dc: DCView, state: StateView, model: GuardModel, mode: str = SHADOW) -> GuardResult:
     """D · A5–A8: 고른 의도를 **지금** 실행해도 되나. VALIDATE 를 지난 의도를 받는다(`evaluate` 가 그 순서를 지킨다)."""
-    if mode != SHADOW:
-        raise ValueError(f"mode={mode!r}: OQ-17(안전 동작 전순서) 전에는 shadow 만 켠다")
+    _check_mode(mode)
     iid = _intent_id(intent)
     try:
         return _guard(intent, dc, state, model, mode)
@@ -211,8 +217,7 @@ def _unmet(spec, target, node, refs) -> list:
 def evaluate(intent, dc: DCView, state: StateView, model: GuardModel, mode: str = SHADOW):
     """VALIDATE → GUARD. VALIDATE 가 막으면 GUARD 는 돌지 않고, GuardResult 는 그 규칙으로 DENY 다(닫는 쪽으로만).
     ARBITRATE 는 후보가 하나라 고를 것이 없다(BD-24: 지금 옮길 규칙 없음)."""
-    if mode != SHADOW:
-        raise ValueError(f"mode={mode!r}: OQ-17(안전 동작 전순서) 전에는 shadow 만 켠다")
+    _check_mode(mode)
     v = validate(intent, dc, model)
     if not v.ok:
         return v, GuardResult(v.intent_id, DENY, mode, v.rule, (), [f"[{v.rule}] {r}" for r in v.reasons], None)

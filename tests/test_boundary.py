@@ -34,19 +34,10 @@ class Imports(unittest.TestCase):
 class OneLanguage(unittest.TestCase):
     """CMD-G5 · BD-108: 술어 · 인자 검사의 자기 구현이 guard 안에 남지 않는다. action 의 한 벌을 쓴다."""
 
-    def test_shims_only_reexport(self):
-        """guard/predicate.py · params.py 는 action 의 대조 시험 때문에 남긴 흔적이다. import 말고는 아무것도 없어야 한다."""
-        import action.params
-        import action.predicate
-        from guard import params, predicate
-        for name, mod in (("predicate.py", "action.predicate"), ("params.py", "action.params")):
-            body = ast.parse((PKG / name).read_text(encoding="utf-8")).body
-            kinds = [type(n).__name__ for n in body
-                     if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant))]   # 머리말 글은 빼고
-            self.assertEqual(kinds, ["ImportFrom"], name)
-            self.assertEqual(body[-1].module, mod, name)
-        self.assertIs(predicate.holds, action.predicate.holds)
-        self.assertIs(params.check_args, action.params.check_args)
+    def test_no_leftover_modules(self):
+        """CMD-G6: 옮김 흔적(guard/predicate.py · params.py)을 지웠다. action A6 가 그 모듈을 더는 읽지 않는다."""
+        self.assertFalse((PKG / "predicate.py").exists())
+        self.assertFalse((PKG / "params.py").exists())
 
     def test_no_own_predicate_or_params(self):
         own = []

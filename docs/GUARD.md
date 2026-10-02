@@ -220,3 +220,19 @@ D 가 보는 낡은 키 = `stale_keys` ∩ (필수 키 ∪ 의도의 `used_keys`
 시험(G5): 단위 88 · 변이 **72/72 RED** · MS 대조 68,688 비교 다름 0 · 모델 다름 0 · `dc_fixtures --check` 같다.
 - 변이 수가 78 → 72 로 준 까닭: 지운 자기 술어(4) · 인자(7) 파일을 겨냥하던 11 개를 뺐다. 그 언어의 변이는 이제 action 의 것이다. 새로 넣은 것은 5 개다: ★ 자기 술어로 돌아감 · 자기 인자 검사로 돌아감 · 흔적 모듈에 구현이 끼어듦 · ActionModel 길의 위험 등급 · 허가를 버림.
 - 옆 저장소(통합 머리, 새 guard 를 옆에 둠): MS `53b8b6c` 186 OK(건너뜀 9 — Telemetry 경로 · llmsensor) · action `3995fdb` OK(`GUARD_REPO` 를 주면 건너뜀 3 — health 없음) · DC `ce3a0bc` OK · Telemetry `89d2887` OK.
+
+## 11. enforce 를 받아들인다 · 흔적 정리 (CMD-G6, E3 첫 일 · BD-106 · BD-114)
+
+- `guard` · `evaluate` 가 `mode="enforce"` 를 받는다. **판정은 모드와 무관하다**: 같은 입력이면 verdict · rule · reasons · state_refs · safe_action 이 같고 `mode` 칸(그래서 `guard_id`)만 다르다.
+  - 예외는 두 모드 모두 DENY(E) 다.
+  - 모르는 모드(`"loud"` · `None` · 대문자 등)는 판정 전에 `ValueError` 로 거절한다. 설정 오류를 판정으로 덮지 않는다.
+- **BD-106 순서(STOP > HOLD/WAIT > ESCALATE)는 넣지 않았다.** BD-114 (1) 로 D 는 거절만 한다. 그래서 그 값을 읽는 곳이 없다(소비자 없는 값).
+- D 의 SAFE_ACTION 가지(BD-104: 기본 행동이 실행기 행동일 때만)는 **그대로 두었다**. BD-114 (1) 이 "BD-104 그대로" 라고 적었다.
+  - 지금 ActionModel 에는 안전 동작(STOP · ESCALATE 등)이 없다. 그래서 실제 배치에서 D 는 늘 DENY 다.
+  - 안전 동작이 실행기 행동으로 생기면(BD-114: 알릴 수단이 정해질 때) 그때 이 가지와 BD-106 순서를 함께 본다.
+- 옮김 흔적 `guard/predicate.py` · `guard/params.py` 를 지웠다. action A6(`2f4791e`)이 guard 대조 시험을 "같은 객체" 확인 하나로 바꿨고, 흔적 모듈을 읽지 않는다. 경계 시험은 두 파일이 없음을 본다.
+
+시험(G6):
+- shadow 대 enforce **전수 대조**: 닫힘 성질의 경우 · 조인 것 전부(3,240) + DC 실제 문맥 8 × 행동 3 × used_keys 4(96) + MS 대조의 비교 전부(68,688). 모드 다름 0.
+- 변이: ★ enforce 에서만 ALLOW 를 더함 · ★ enforce 에서 VALIDATE 를 지나침 · 모드에 따라 rule 이 달라짐 · 모드에 따라 까닭이 달라짐 · 모르는 모드를 받음.
+  - 뺀 것: enforce 를 거절하던 자리의 변이 둘 · 흔적 모듈 변이 하나. 대상 코드가 없어졌다.

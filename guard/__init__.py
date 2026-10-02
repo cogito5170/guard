@@ -1,4 +1,4 @@
-"""Guard -- VALIDATE · ARBITRATE · GUARD (L4 와 L5 사이, baseline BD-07 · BD-20 · BD-24). 지금은 **shadow** 뿐이다.
+"""Guard -- VALIDATE · ARBITRATE · GUARD (L4 와 L5 사이, baseline BD-07 · BD-20 · BD-24). 모드는 shadow · enforce, 판정은 모드와 무관하다(CMD-G6).
 
     validate(intent, dc, model)                -> ValidationResult   A0–A4: 꼴 · 자기 DC 안의 근거
     guard(intent, dc, state, model)            -> GuardResult        D · A5–A8: 지금 상태 기준의 허가. 닫는 쪽으로만

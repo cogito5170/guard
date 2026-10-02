@@ -176,7 +176,13 @@ def run() -> dict:
             if it is None:
                 g = ("DENY", "A0")
             else:
-                _, gr = evaluate(it, dc, state_from_ms(mm, allowed), model)
+                sv = state_from_ms(mm, allowed)
+                _, gr = evaluate(it, dc, sv, model)
+                _, ge = evaluate(it, dc, sv, model, mode="enforce")      # CMD-G6: 판정은 모드와 무관해야 한다
+                a, b = gr.to_dict(), ge.to_dict()
+                if (a.pop("mode"), b.pop("mode")) != ("shadow", "enforce") or \
+                        {k: v for k, v in a.items() if k != "guard_id"} != {k: v for k, v in b.items() if k != "guard_id"}:
+                    rep["mode_diffs"] = rep.get("mode_diffs", 0) + 1
                 g = (gr.verdict, gr.rule)
                 if gr.verdict == ALLOW:
                     allowed.add(repeat_key(it, mm.graph.nodes[it.target].version))
@@ -198,11 +204,11 @@ def main() -> int:
         return 2
     print(f"MS: {rep['ms']}")
     print(f"경우 {rep['cases']} · 비교 {rep['compared']} · 같음 {rep['matched']} · 다름 {len(rep['diffs'])} · "
-          f"범위 밖 {rep['out_of_scope']} · 모델 다름 {rep.get('model_mismatch', 0)}")
+          f"범위 밖 {rep['out_of_scope']} · 모델 다름 {rep.get('model_mismatch', 0)} · 모드 다름 {rep.get('mode_diffs', 0)}")
     print("MS 판정 규칙별 수: " + " · ".join(f"{k} {v}" for k, v in sorted(rep["by_rule"].items())))
     for x in rep["diffs"][:40]:
         print(json.dumps(x, ensure_ascii=False))
-    return 1 if rep["diffs"] or rep.get("model_mismatch") else 0
+    return 1 if rep["diffs"] or rep.get("model_mismatch") or rep.get("mode_diffs") else 0
 
 
 if __name__ == "__main__":

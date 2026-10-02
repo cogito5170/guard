@@ -19,7 +19,6 @@ from eval.dc_fixtures import find_dc  # noqa: E402
 from eval.ms_contrast import find_ms  # noqa: E402
 
 R, F, V, C, D = "guard/rules.py", "guard/forms.py", "guard/views.py", "guard/command.py", "guard/dc_adapter.py"
-OQ17 = 'raise ValueError(f"mode={mode!r}: OQ-17(안전 동작 전순서) 전에는 shadow 만 켠다")'
 # (이름, 파일, 바꿀 글, 바꿀 것). ★ = "ALLOW 를 더하는" 변이(닫는 쪽으로만을 깨는 것)
 MUTANTS = [
     ("★ 걸린 규칙이 있어도 ALLOW", R, "    if not fails:\n", "    if True:\n"),
@@ -29,8 +28,13 @@ MUTANTS = [
     ("★ Validate 예외를 통과로", R, 'rule, reasons = "E", [f"Validate 예외', 'rule, reasons = PASS, [f"Validate 예외'),
     ("★ D 의 갈아 끼움을 ALLOW 로", R, "return GuardResult(it.id, SAFE_ACTION, mode, rule, refs, reasons, dc.default_action)",
      "return GuardResult(it.id, ALLOW, mode, PASS, refs, [], None)"),
-    ("★ enforce 를 켤 수 있음(guard)", R, f"    {OQ17}\n    iid = _intent_id(intent)", "    iid = _intent_id(intent)"),
-    ("★ enforce 를 켤 수 있음(evaluate)", R, f"    {OQ17}\n    v = validate", "    v = validate"),
+    ("★ enforce 에서만 ALLOW 를 더함", R, "    if not fails:\n", '    if not fails or mode == "enforce":\n'),
+    ("★ enforce 에서 VALIDATE 를 지나침", R, "    if not v.ok:\n", '    if not v.ok and mode == "shadow":\n'),
+    ("모드에 따라 rule 이 달라짐", R, "rule = next(r for r in GUARD_ORDER if r in fails)",
+     'rule = next(r for r in GUARD_ORDER if r in fails) if mode == "shadow" else "E"'),
+    ("모드에 따라 까닭이 달라짐", R, 'reasons = [f"[{r}] {w}" for r in GUARD_ORDER if r in fails for w in fails[r]]',
+     'reasons = [f"[{r}] {w}" for r in GUARD_ORDER if r in fails for w in fails[r]][: (9 if mode == "shadow" else 1)]'),
+    ("모르는 모드를 받음", R, "    if mode not in MODES:\n", "    if False:\n"),
     ("A5 판 비교 생략", R, "elif node.version != dc.seen[it.target]:", "elif False:"),
     ("A5 지금 없음 생략", R, '        if node is None:\n            fails["A5"]', '        if False:\n            fails["A5"]'),
     ("A5 본 판 없음 생략", R, "elif it.target not in dc.seen:", "elif False:"),
@@ -103,8 +107,6 @@ MUTANTS = [
      "from action import predicate as _p\nclass predicate:\n    props_of = staticmethod(_p.props_of)\n    holds = staticmethod(lambda p, v: True)\n"),
     ("자기 인자 검사로 돌아감(검사 안 함)", R, "from action.params import check_args\n",
      "def check_args(params, args):\n    return []\n"),
-    ("흔적 모듈에 자기 인자 검사가 끼어듦", "guard/params.py", "from action.params import TYPES, check_args  # noqa: F401\n",
-     "from action.params import TYPES  # noqa: F401\n\n\ndef check_args(params, args):\n    return []\n"),
     ("행동 명세가 ActionModel 의 위험 등급을 버림", V, "specs = {s.name: ActionSpec(**to_guard_spec(s)) for s in model.specs}",
      'specs = {s.name: ActionSpec(**{**to_guard_spec(s), "risk": "local"}) for s in model.specs}'),
     ("ActionModel 길이 허가를 버림", V, "return cls(specs, frozenset(grants), tuple(risky))", "return cls(specs, frozenset(), tuple(risky))"),

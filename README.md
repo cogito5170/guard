@@ -10,7 +10,7 @@ Policy(MS) ─ActionIntent─► validate (A0–A4) ─► [arbitrate: 후보 �
 
 - **닫는 쪽으로만** 간다. VALIDATE 가 막은 의도는 GUARD 로 가지 않는다. 걸린 규칙이 하나라도 있으면 ALLOW 가 아니다. 예외가 나면 DENY 다.
 - **순수 함수**다. 같은 입력이면 같은 결과가 나온다. 되풀이(A8)의 기억은 호출자가 `StateView.allowed` 로 넘긴다.
-- **shadow 만** 켠다. enforce 는 OQ-17(안전 동작 전순서의 값)이 정해진 뒤에 켠다. 지금 `mode="enforce"` 를 넘기면 거절한다.
+- 모드는 **shadow · enforce** 다(CMD-G6). **판정은 모드와 무관하다** — 같은 입력이면 verdict · rule · reasons 가 같고 `mode` 칸만 다르다. 모르는 모드는 거절한다.
 - DC 결정 문맥은 **데이터**로 받는다(`dcview_from_dc`, digest 를 다시 계산한다). DC 코드는 import 하지 않는다.
 - Policy · CR · MS · DC 를 import 하지 않는다. 의존은 action 계약(`action-contract/1`, 커밋 `3995fdb` 고정)과 표준 라이브러리뿐이다.
 

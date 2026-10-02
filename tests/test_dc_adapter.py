@@ -168,6 +168,22 @@ class DStandsOnRealContexts(unittest.TestCase):
             it = ActionIntent(v.dc_id, "ms-cr@cr-3", "reboot", "srv1", {}, "시험", used, "llm")
             self.assertEqual(evaluate(it, v, STATE, MODEL)[1].verdict, ALLOW, used)
 
+    def test_enforce_agrees_on_real_contexts(self):
+        """CMD-G6: DC 실제 빌더 문맥 8 개 × 행동 셋 × used_keys 넷에서 shadow · enforce 판정이 같다(mode 칸만 다름)."""
+        n = 0
+        for name in CASES:
+            v = view(name, offers=OFFERS, seen=SEEN)
+            for action, target, args in (("reboot", "srv1", {}), ("throttle", "srv1", {"level": 1}), ("ESCALATE", None, {})):
+                for used in ((), ("query:hot",), ("tool[Bash].tool_execution_health",), ("runtime.rate_limit_state",)):
+                    it = ActionIntent(v.dc_id, "ms-cr@cr-3", action, target, args, "시험", used, "llm")
+                    s = evaluate(it, v, STATE, MODEL)[1].to_dict()
+                    e = evaluate(it, v, STATE, MODEL, mode="enforce")[1].to_dict()
+                    self.assertEqual((s.pop("mode"), e.pop("mode")), ("shadow", "enforce"))
+                    s.pop("guard_id"), e.pop("guard_id")
+                    self.assertEqual(s, e, (name, action, used))
+                    n += 1
+        self.assertEqual(n, 8 * 3 * 4)
+
     def test_reasons_name_the_missing_keys(self):
         v = view("exec_incomplete_escalate", offers=OFFERS, seen=SEEN)
         _, r = evaluate(intent(v, "reboot", "srv1"), v, STATE, MODEL)

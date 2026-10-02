@@ -14,6 +14,9 @@ class AgainstMS(unittest.TestCase):
         self.assertEqual(self.rep["diffs"][:5], [])
         self.assertEqual(self.rep["matched"], self.rep["compared"])
 
+    def test_enforce_agrees_with_shadow(self):
+        self.assertEqual(self.rep.get("mode_diffs", 0), 0)
+
     def test_action_model_path_equals_registry_path(self):
         self.assertEqual(self.rep.get("model_mismatch", 0), 0)
 
