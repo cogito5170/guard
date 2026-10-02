@@ -155,3 +155,4 @@ DC 코드는 import 하지 않는다. DC 가 내는 **데이터**만 읽는다.
     - 위험 행동 reboot: 완전 → ALLOW · 불완전 · 낡음 → SAFE_ACTION(DC 의 기본 행동) · 기본 없음 → DENY
     - local 행동은 어디서나 ALLOW 다. 안전 기본 후보(ESCALATE)는 막지 않는다.
   - DC 가 옆에 있으면 고정 파일이 지금 DC 가 짓는 것과 같은지 본다(드리프트).
+- 변이(`eval/mutation.py`): G1 의 58 개 + 어댑터 13 개 = **71/71 RED**.
