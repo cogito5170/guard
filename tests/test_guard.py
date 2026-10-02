@@ -99,11 +99,15 @@ class GuardRules(unittest.TestCase):
             self.assertEqual(evaluate(intent(), None, state(), model(), mode=mode)[1].rule, "E")
 
     def test_unknown_mode_is_refused(self):
+        """판정 전에 설정 오류로 거절한다 -- GuardResult 꼴이 모드를 거절해 나는 FormError 와 다르다."""
         for mode in ("loud", "Enforce", None, ""):
-            with self.assertRaises(ValueError, msg=mode):
-                guard(intent(), dc(), state(), model(), mode=mode)
-            with self.assertRaises(ValueError, msg=mode):
-                evaluate(intent(), dc(), state(), model(), mode=mode)
+            for call in (lambda: guard(intent(), dc(), state(), model(), mode=mode),
+                         lambda: evaluate(intent(), dc(), state(), model(), mode=mode),
+                         lambda: evaluate("의도 아님", dc(), state(), model(), mode=mode)):
+                with self.assertRaises(ValueError, msg=mode) as cm:
+                    call()
+                self.assertIs(type(cm.exception), ValueError, mode)
+                self.assertIn("mode=", str(cm.exception))
 
     def test_pure(self):
         a, b = g(), g()
