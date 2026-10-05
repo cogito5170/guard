@@ -28,7 +28,7 @@ class Imports(unittest.TestCase):
     def test_action_contract_is_pinned(self):
         self.assertEqual(action.forms.SPEC, "action-contract/1")
         text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        self.assertIn("git+https://github.com/cogito5170/action@3995fdb3ba487f31d841d3e11b710e64f0d523db", text)
+        self.assertIn("git+https://github.com/cogito5170/action@9d6729fc6809d68d2b5d55b4ad2fd37e5281d998", text)
 
 
 class OneLanguage(unittest.TestCase):

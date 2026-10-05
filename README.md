@@ -12,7 +12,7 @@ Policy(MS) ─ActionIntent─► validate (A0–A4) ─► [arbitrate: 후보 �
 - **순수 함수**다. 같은 입력이면 같은 결과가 나온다. 되풀이(A8)의 기억은 호출자가 `StateView.allowed` 로 넘긴다.
 - 모드는 **shadow · enforce** 다(CMD-G6). **판정은 모드와 무관하다** — 같은 입력이면 verdict · rule · reasons 가 같고 `mode` 칸만 다르다. 모르는 모드는 거절한다.
 - DC 결정 문맥은 **데이터**로 받는다(`dcview_from_dc`, digest 를 다시 계산한다). DC 코드는 import 하지 않는다.
-- Policy · CR · MS · DC 를 import 하지 않는다. 의존은 action 계약(`action-contract/1`, 커밋 `3995fdb` 고정)과 표준 라이브러리뿐이다.
+- Policy · CR · MS · DC 를 import 하지 않는다. 의존은 action 계약(`action-contract/1`, 커밋 `9d6729f` 고정)과 표준 라이브러리뿐이다.
 
 설계 · baseline 표와 다른 점 · 가정은 [`docs/GUARD.md`](docs/GUARD.md) 에 있다.
 
